@@ -1,6 +1,8 @@
 FROM node:22-alpine AS build
 WORKDIR /src
 
+RUN npm install -g npm@11.6.2
+
 COPY package.json package-lock.json ./
 RUN npm ci
 
