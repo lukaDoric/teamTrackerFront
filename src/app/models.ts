@@ -145,3 +145,66 @@ export interface LeaderboardEntry {
   teams: string[];
   pullRequests: ReviewedPr[];
 }
+
+export interface RetrospectiveListItem {
+  id: number;
+  fileName: string;
+  model: string | null;
+  createdAt: string;
+  sentences: number;
+}
+
+export interface RetroSentence {
+  section: string;
+  category: string;
+  text: string;
+  developed: boolean | null;
+  fitsCategory: boolean;
+  fitNote: string | null;
+  component: string | null;
+  inDomain: boolean;
+}
+
+export interface RetroSmCategory {
+  name: string;
+  reps: number;
+  action: string | null;
+  sentences: RetroSentence[];
+}
+
+export interface RetroSmSection {
+  section: string;
+  categories: RetroSmCategory[];
+}
+
+export interface RetroComponentGroup {
+  component: string;
+  explanation: string | null;
+  advice: string | null;
+  criticality: 'low' | 'medium' | 'high';
+  low: RetroSentence[];
+  high: RetroSentence[];
+  total: number;
+}
+
+export interface RetroAction {
+  category: string;
+  action: string;
+}
+
+export interface RetroSprint {
+  sprint: string;
+  smGrouping: RetroSmSection[];
+  actions: RetroAction[];
+  components: RetroComponentGroup[];
+  outOfDomain: RetroSentence[];
+}
+
+export interface RetrospectiveDetail {
+  id: number;
+  teamId: number;
+  fileName: string;
+  model: string | null;
+  createdAt: string;
+  sprints: RetroSprint[];
+}

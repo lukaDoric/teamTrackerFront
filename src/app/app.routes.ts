@@ -26,5 +26,11 @@ export const routes: Routes = [
     canActivate: [teacherGuard],
     loadComponent: () => import('./pages/repo-detail/repo-detail').then((m) => m.RepoDetail),
   },
+  {
+    path: 'retrospectives',
+    canActivate: [teacherGuard],
+    loadComponent: () =>
+      import('./pages/retrospectives/retrospectives').then((m) => m.Retrospectives),
+  },
   { path: '**', redirectTo: 'leaderboard' },
 ];

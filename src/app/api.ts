@@ -2,7 +2,7 @@ import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Course, RefreshStatus, ReviewAssessment, Team } from './models';
+import { Course, RefreshStatus, RetrospectiveDetail, ReviewAssessment, Team } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class Api {
@@ -48,5 +48,11 @@ export class Api {
 
   deleteAnnotation(repoId: number, number: number): Observable<unknown> {
     return this.http.delete(`/api/repositories/${repoId}/pullrequests/${number}/annotation`);
+  }
+
+  analyzeRetrospective(teamId: number, file: File): Observable<RetrospectiveDetail> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<RetrospectiveDetail>(`/api/teams/${teamId}/retrospectives`, form);
   }
 }

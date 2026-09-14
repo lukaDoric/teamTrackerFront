@@ -1,0 +1,195 @@
+<h1>Analiza retrospektiva</h1>
+<p class="muted">
+  Upload .xlsx retrospektive tima → LLM analizira rečenice po komponentama timskog rada (MPP i KTR
+  koje utiču na MPP), proverava SM klasifikaciju i daje savete.
+</p>
+
+<section class="card upload">
+  <div class="row">
+    <select
+      [ngModel]="teamId()"
+      (ngModelChange)="teamId.set($event); selectedId.set(null)"
+      name="teamId"
+    >
+      <option [ngValue]="null" disabled>Izaberi tim</option>
+      @for (t of teams.value() ?? []; track t.id) {
+        <option [ngValue]="t.id">{{ t.name }}</option>
+      }
+    </select>
+
+    <input type="file" accept=".xlsx" (change)="onFile($event)" />
+
+    <button (click)="analyze()" [disabled]="busy() || teamId() == null || !file()">
+      {{ busy() ? 'Analiziram…' : 'Analiziraj' }}
+    </button>
+  </div>
+
+  @if (busy()) {
+    <p class="muted">LLM analizira dokument — može potrajati nekoliko sekundi…</p>
+  }
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+</section>
+
+<div class="grid">
+
+  <section class="card">
+    <h2>Prethodne analize</h2>
+    @if (teamId() == null) {
+      <p class="muted">Izaberi tim da vidiš istoriju.</p>
+    } @else if (analyses.isLoading()) {
+      <p class="muted">Učitavanje…</p>
+    } @else if (analyses.value(); as list) {
+      @if (list.length === 0) {
+        <p class="muted">Nema analiza za ovaj tim još.</p>
+      } @else {
+        <ul class="list">
+          @for (a of list; track a.id) {
+            <li [class.active]="a.id === selectedId()" (click)="view(a.id)">
+              <span class="fname">{{ a.fileName }}</span>
+              <span class="meta">{{ a.createdAt | date: 'short' }} · {{ a.sentences }} rečenica</span>
+            </li>
+          }
+        </ul>
+      }
+    }
+  </section>
+
+  <section class="card">
+    <h2>Analiza po sprintu</h2>
+    @if (selectedId() == null) {
+      <p class="muted">Izaberi analizu ili pokreni novu.</p>
+    } @else if (detail.isLoading()) {
+      <p class="muted">Učitavanje…</p>
+    } @else if (detail.value(); as d) {
+      <p class="muted small">{{ d.fileName }} · model {{ d.model ?? '—' }}</p>
+      @if (d.sprints.length === 0) {
+        <p class="muted">Nema podataka.</p>
+      } @else {
+        @for (s of d.sprints; track s.sprint) {
+          <div class="sprint">
+            <h3>{{ s.sprint }}</h3>
+
+            <details class="sm" open>
+              <summary>Kako je SM grupisao</summary>
+              @for (sec of s.smGrouping; track sec.section) {
+                <div class="sm-section">
+                  <h4 class="sec-title" [class]="'sec-' + sec.section">{{ sectionLabel(sec.section) }}</h4>
+                  @for (cat of sec.categories; track cat.name) {
+                    <div class="sm-cat">
+                      <div class="sm-cat-head">
+                        <b>{{ cat.name }}</b>
+                        <span class="reps muted small">×{{ cat.reps }}</span>
+                      </div>
+                      <ul class="sentences">
+                        @for (s2 of cat.sentences; track $index) {
+                          <li>
+                            {{ s2.text }}
+                            @if (s2.inDomain && s2.component) {
+                              <span class="ktr" title="LLM mapiranje na KTR">{{ s2.component }}</span>
+                            }
+                            @if (!s2.fitsCategory) {
+                              <span class="flag" [title]="s2.fitNote">⚠ ne pripada kategoriji</span>
+                            }
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  }
+                </div>
+              }
+            </details>
+
+            @if (s.actions.length > 0) {
+              <details class="sm actions-block" open>
+                <summary>Akcije za dalje</summary>
+                <ul class="sentences">
+                  @for (a of s.actions; track $index) {
+                    <li>{{ a.action }}</li>
+                  }
+                </ul>
+              </details>
+            }
+
+            @if (s.components.length > 0) {
+            <h4 class="section-label">Analiza po KTR (komponente koje utiču na MPP)</h4>
+
+            <ul class="groups">
+              @for (g of s.components; track g.component) {
+                <li class="group" [class.open]="isOpen(s.sprint, g.component)">
+                  <div class="group-head" (click)="toggle(s.sprint, g.component)">
+                    <span class="caret">{{ isOpen(s.sprint, g.component) ? '▾' : '▸' }}</span>
+                    <span class="comp-name">{{ g.component }}</span>
+                    <span class="counts">
+                      <span class="pos" title="Visoka zastupljenost">✓ {{ g.high.length }}</span>
+                      <span class="neg" title="Niska zastupljenost">✗ {{ g.low.length }}</span>
+                    </span>
+                    <span class="crit" [class]="'crit-' + g.criticality">{{ critLabel(g.criticality) }}</span>
+                  </div>
+
+                  @if (isOpen(s.sprint, g.component)) {
+                    <div class="examples">
+                      @if (g.explanation) {
+                        <div class="insight">
+                          <h4>Zašto je važno</h4>
+                          <p>{{ g.explanation }}</p>
+                        </div>
+                      }
+                      @if (g.advice) {
+                        <div class="insight advice">
+                          <h4>💡 Savet (LLM, na osnovu SM kategorija)</h4>
+                          <p>{{ g.advice }}</p>
+                        </div>
+                      }
+
+                      @if (g.low.length > 0) {
+                        <h4 class="neg">Ukazuje na nisku zastupljenost ({{ g.low.length }})</h4>
+                        <ul class="sentences">
+                          @for (s2 of g.low; track $index) {
+                            <li>
+                              {{ s2.text }}
+                              <span class="sec" [class]="'sec-' + s2.section" [title]="'SM potkategorija: ' + s2.category">{{ s2.category }}</span>
+                              @if (!s2.fitsCategory) { <span class="flag" [title]="s2.fitNote">⚠ ne pripada kategoriji</span> }
+                            </li>
+                          }
+                        </ul>
+                      }
+                      @if (g.high.length > 0) {
+                        <h4 class="pos">Ukazuje na visoku zastupljenost ({{ g.high.length }})</h4>
+                        <ul class="sentences">
+                          @for (s2 of g.high; track $index) {
+                            <li>
+                              {{ s2.text }}
+                              <span class="sec" [class]="'sec-' + s2.section" [title]="'SM potkategorija: ' + s2.category">{{ s2.category }}</span>
+                              @if (!s2.fitsCategory) { <span class="flag" [title]="s2.fitNote">⚠ ne pripada kategoriji</span> }
+                            </li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+
+            @if (s.outOfDomain.length > 0) {
+              <details class="outdomain">
+                <summary>Van domena MPP-a ({{ s.outOfDomain.length }})</summary>
+                <ul class="sentences">
+                  @for (c of s.outOfDomain; track $index) {
+                    <li>
+                      {{ c.text }}
+                      <span class="sec" [class]="'sec-' + c.section" [title]="'SM potkategorija: ' + c.category">{{ c.category }}</span>
+                    </li>
+                  }
+                </ul>
+              </details>
+            }
+            }
+          </div>
+        }
+      }
+    }
+  </section>
+</div>
