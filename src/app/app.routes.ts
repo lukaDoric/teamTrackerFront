@@ -16,5 +16,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/leaderboard-panel/leaderboard-panel').then((m) => m.LeaderboardPanel),
   },
+  {
+    path: 'upravljanje',
+    canActivate: [teacherGuard],
+    loadComponent: () => import('./pages/manage/manage').then((m) => m.Manage),
+  },
   { path: '**', redirectTo: 'leaderboard' },
 ];

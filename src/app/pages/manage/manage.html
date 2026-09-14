@@ -1,0 +1,152 @@
+<div class="head">
+  <h1>Upravljanje</h1>
+  <a class="link" routerLink="/">← Pregled kurseva</a>
+</div>
+<p class="muted">Ovde dodaješ kurseve, timove i uvoziš repozitorijume. Pregled je na početnoj strani.</p>
+
+<div class="grid">
+
+  <section class="card">
+    <h2>Dodaj kurs</h2>
+
+    <form class="col" (ngSubmit)="createCourse()">
+      <div class="row">
+        <input
+          placeholder="Kod (npr. PSW)"
+          [ngModel]="courseCode()"
+          (ngModelChange)="courseCode.set($event)"
+          name="courseCode"
+        />
+        <input
+          placeholder="Naziv kursa"
+          [ngModel]="courseName()"
+          (ngModelChange)="courseName.set($event)"
+          name="courseName"
+        />
+      </div>
+      <textarea
+        placeholder="Opis (opciono)"
+        rows="2"
+        [ngModel]="courseDesc()"
+        (ngModelChange)="courseDesc.set($event)"
+        name="courseDesc"
+      ></textarea>
+      <button type="submit" [disabled]="busy() || !courseCode().trim() || !courseName().trim()">
+        Dodaj kurs
+      </button>
+    </form>
+
+    @if (courses.isLoading()) {
+      <p class="muted">Učitavanje…</p>
+    } @else if (courses.value(); as list) {
+      @if (list.length === 0) {
+        <p class="muted">Nema kurseva još.</p>
+      } @else {
+        <table>
+          <thead>
+            <tr><th>Kod</th><th>Naziv</th><th>Opis</th><th>Timova</th></tr>
+          </thead>
+          <tbody>
+            @for (c of list; track c.id) {
+              <tr>
+                <td>{{ c.code }}</td>
+                <td>{{ c.name }}</td>
+                <td>{{ c.description ?? '—' }}</td>
+                <td>{{ c.teams ?? 0 }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    }
+  </section>
+
+  <section class="card">
+    <h2>Dodaj tim</h2>
+
+    <form class="row" (ngSubmit)="createTeam()">
+      <input
+        placeholder="Naziv tima"
+        [ngModel]="teamName()"
+        (ngModelChange)="teamName.set($event)"
+        name="teamName"
+      />
+      <select [ngModel]="teamCourseId()" (ngModelChange)="teamCourseId.set($event)" name="teamCourseId">
+        <option [ngValue]="null">Bez kursa</option>
+        @for (c of courses.value() ?? []; track c.id) {
+          <option [ngValue]="c.id">{{ c.code }} — {{ c.name }}</option>
+        }
+      </select>
+      <button type="submit" [disabled]="busy() || !teamName().trim()">Dodaj</button>
+    </form>
+
+    @if (teams.isLoading()) {
+      <p class="muted">Učitavanje…</p>
+    } @else if (teams.value(); as list) {
+      @if (list.length === 0) {
+        <p class="muted">Nema timova još.</p>
+      } @else {
+        <table>
+          <thead>
+            <tr><th>Id</th><th>Naziv</th><th>Kurs</th><th>Repoa</th></tr>
+          </thead>
+          <tbody>
+            @for (t of list; track t.id) {
+              <tr>
+                <td>{{ t.id }}</td>
+                <td>{{ t.name }}</td>
+                <td>{{ courseLabel(t.courseId) }}</td>
+                <td>{{ t.repositories ?? 0 }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    }
+  </section>
+
+  <section class="card">
+    <h2>Uvezi repozitorijum</h2>
+
+    <form class="row" (ngSubmit)="importRepo()">
+      <input
+        placeholder="owner/repo"
+        [ngModel]="importFullName()"
+        (ngModelChange)="importFullName.set($event)"
+        name="fullName"
+      />
+      <select [ngModel]="importTeamId()" (ngModelChange)="importTeamId.set($event)" name="teamId">
+        <option [ngValue]="null" disabled>Izaberi tim</option>
+        @for (t of teams.value() ?? []; track t.id) {
+          <option [ngValue]="t.id">{{ t.name }}</option>
+        }
+      </select>
+      <button type="submit" [disabled]="busy() || !importFullName().trim() || importTeamId() == null">
+        Uvezi
+      </button>
+    </form>
+
+    @if (repositories.isLoading()) {
+      <p class="muted">Učitavanje…</p>
+    } @else if (repositories.value(); as repos) {
+      @if (repos.length === 0) {
+        <p class="muted">Nema uvezenih repoa još.</p>
+      } @else {
+        <table>
+          <thead>
+            <tr><th>Repo</th><th>PR-ova</th><th>Zadnji sync</th></tr>
+          </thead>
+          <tbody>
+            @for (r of repos; track r.id) {
+              <tr>
+                <td>{{ r.fullName }}</td>
+                <td>{{ r.pullRequests }}</td>
+                <td>{{ r.lastSyncedAt ? (r.lastSyncedAt | date: 'short') : '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    }
+  </section>
+</div>
