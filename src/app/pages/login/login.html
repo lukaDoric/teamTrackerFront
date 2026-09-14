@@ -1,0 +1,33 @@
+<div class="wrap">
+  <h1>Prijava nastavnika</h1>
+
+  <form (ngSubmit)="submit()">
+    <label>
+      Korisničko ime
+      <input
+        [ngModel]="username()"
+        (ngModelChange)="username.set($event)"
+        name="username"
+        autocomplete="username"
+      />
+    </label>
+    <label>
+      Lozinka
+      <input
+        type="password"
+        [ngModel]="password()"
+        (ngModelChange)="password.set($event)"
+        name="password"
+        autocomplete="current-password"
+      />
+    </label>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="busy() || !username().trim() || !password()">
+      {{ busy() ? 'Prijavljivanje…' : 'Prijavi se' }}
+    </button>
+  </form>
+</div>
