@@ -20,6 +20,13 @@ export interface Team {
   repositories?: number;
 }
 
+export interface RepositoryListItem {
+  id: number;
+  fullName: string;
+  teamId: number;
+  lastSyncedAt: string | null;
+  pullRequests: number;
+}
 export interface ReviewedPr {
   number: number;
   title: string;

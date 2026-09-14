@@ -2,6 +2,7 @@
   <a routerLink="/leaderboard" class="brand">📊 {{ title() }}</a>
   <nav class="nav">
     @if (auth.isTeacher()) {
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Kursevi</a>
       <a routerLink="/leaderboard" routerLinkActive="active">Leaderboard</a>
       <button class="linkbtn" (click)="logout()">Odjava</button>
     } @else {

@@ -1,0 +1,68 @@
+<div class="head">
+  <h1>Kursevi</h1>
+  <a class="btn" routerLink="/upravljanje">＋ Dodaj kurs / tim / repo</a>
+</div>
+
+@if (loading()) {
+  <p class="muted">Učitavanje…</p>
+} @else if (courses.error() || teams.error()) {
+  <p class="error">Greška pri učitavanju.</p>
+} @else if (groups(); as list) {
+  @if (list.length === 0) {
+    <div class="empty">
+      <p class="muted">Nema kurseva još.</p>
+      <a class="btn" routerLink="/upravljanje">Dodaj prvi kurs →</a>
+    </div>
+  } @else {
+    <div class="cards">
+      @for (c of list; track c.id) {
+        <section class="card" [class.open]="expanded() === c.id">
+          <button class="card-head" (click)="toggle(c.id)">
+            <span class="caret">{{ expanded() === c.id ? '▾' : '▸' }}</span>
+            <span class="card-title">
+              <span class="code">{{ c.code }}</span>
+              <span class="name">{{ c.name }}</span>
+              @if (c.description) { <span class="desc muted small">{{ c.description }}</span> }
+            </span>
+            <span class="count muted small">{{ c.teams.length }} tim(ova)</span>
+          </button>
+
+          @if (expanded() === c.id) {
+            <div class="teams">
+              @if (c.teams.length === 0) {
+                <p class="muted small">Nema timova u ovom kursu. Dodaj ih na stranici Upravljanje.</p>
+              } @else {
+                @for (t of c.teams; track t.id) {
+                  <div class="team">
+                    <div class="team-head">
+                      <b>{{ t.name }}</b>
+                    </div>
+                    @if (t.repos.length === 0) {
+                      <p class="muted small">Nema repozitorijuma.</p>
+                    } @else {
+                      <table>
+                        <thead>
+                          <tr><th>Repo</th><th>PR-ova</th><th>Zadnji sync</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                          @for (r of t.repos; track r.id) {
+                            <tr>
+                              <td>{{ r.fullName }}</td>
+                              <td>{{ r.pullRequests }}</td>
+                              <td>{{ r.lastSyncedAt ? (r.lastSyncedAt | date: 'short') : '—' }}</td>
+                              <td><a class="link" [routerLink]="['/repositories', r.id]">Analiza →</a></td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          }
+        </section>
+      }
+    </div>
+  }
+}
