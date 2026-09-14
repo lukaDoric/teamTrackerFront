@@ -21,5 +21,10 @@ export const routes: Routes = [
     canActivate: [teacherGuard],
     loadComponent: () => import('./pages/manage/manage').then((m) => m.Manage),
   },
+  {
+    path: 'repositories/:id',
+    canActivate: [teacherGuard],
+    loadComponent: () => import('./pages/repo-detail/repo-detail').then((m) => m.RepoDetail),
+  },
   { path: '**', redirectTo: 'leaderboard' },
 ];

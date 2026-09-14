@@ -1,0 +1,284 @@
+<a class="link back" routerLink="/">← Nazad</a>
+
+<div class="head">
+  <h1>Repo #{{ repoId() }}</h1>
+  <div class="actions">
+    <button (click)="refresh()" [disabled]="busy()">Sync</button>
+  </div>
+</div>
+
+@if (busy()) {
+  <p class="muted">
+    Radi u pozadini{{ phase() ? ' — ' + phase() : '' }}… sačekaj, osvežiće se automatski kad završi.
+  </p>
+}
+
+<p class="muted small">
+  Pokrivenost: ▲ = coverage porastao, ▼ = pao. Održivost: ▲ = manje prekršaja (bolje), ▼ = više
+  (gore). Klikni red za detalje.
+</p>
+
+<div class="toolbar">
+  <input
+    class="search"
+    type="search"
+    placeholder="Pretraga po recenzentu ili autoru…"
+    [value]="searchInput()"
+    (input)="searchInput.set($any($event.target).value)"
+  />
+</div>
+
+@if (overview.isLoading()) {
+  <p class="muted">Učitavanje…</p>
+} @else if (overview.error()) {
+  <p class="error">Greška pri učitavanju PR-ova.</p>
+} @else if (rows().length === 0) {
+  <p class="muted">
+    @if (search()) { Nema PR-ova za „{{ search() }}". } @else { Nema PR-ova. Klikni Sync da povučeš podatke. }
+  </p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>PR</th>
+        <th>Naslov</th>
+        <th>Autor</th>
+        <th>Stanje</th>
+        <th>Pokrivenost</th>
+        <th>Održivost</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of rows(); track r.number) {
+        <tr class="clickable" [class.open]="expanded() === r.number" (click)="toggle(r)">
+          <td class="caret">{{ expanded() === r.number ? '▾' : '▸' }}</td>
+          <td>
+            @if (prUrl(r.number); as url) {
+              <a
+                class="pr-link"
+                [href]="url"
+                target="_blank"
+                rel="noopener"
+                (click)="$event.stopPropagation()"
+                >#{{ r.number }} ↗</a
+              >
+            } @else {
+              #{{ r.number }}
+            }
+          </td>
+          <td class="title">
+            @if (r.annotation) {
+              <span class="pin" [title]="r.annotation.comment">📌</span>
+            }
+            {{ r.title }}
+          </td>
+          <td>{{ r.authorLogin ?? '—' }}</td>
+          <td><span class="badge">{{ r.state }}</span></td>
+
+          <td>
+            @if (r.coverage?.coverageDelta != null) {
+              @if (r.coverage!.coverageDelta! > 0) {
+                <span class="ind good">▲ {{ deltaPct(r.coverage!.coverageDelta) }}</span>
+              } @else if (r.coverage!.coverageDelta! < 0) {
+                <span class="ind bad">▼ {{ deltaPct(r.coverage!.coverageDelta) }}</span>
+              } @else {
+                <span class="ind flat">→ 0%</span>
+              }
+            } @else {
+              <span class="muted">—</span>
+            }
+          </td>
+
+          <td>
+            @if (r.maintainability?.violationsDelta != null) {
+              @if (r.maintainability!.violationsDelta! < 0) {
+                <span class="ind good">▲ {{ r.maintainability!.violationsDelta }} prekršaja</span>
+              } @else if (r.maintainability!.violationsDelta! > 0) {
+                <span class="ind bad">▼ +{{ r.maintainability!.violationsDelta }} prekršaja</span>
+              } @else {
+                <span class="ind flat">→ 0</span>
+              }
+            } @else {
+              <span class="muted">—</span>
+            }
+          </td>
+        </tr>
+
+        @if (expanded() === r.number) {
+          <tr class="detail">
+            <td colspan="7">
+              <div class="detail-meta muted small">
+                Commit-a: {{ r.commits }} · Revizija: {{ r.reviews }} · Kreiran:
+                {{ r.createdAt | date: 'short' }}
+              </div>
+
+              <div class="note" (click)="$event.stopPropagation()">
+                <h4>📌 Nastavnikov komentar</h4>
+                <textarea
+                  rows="2"
+                  placeholder="Komentar nastavnika za ovaj PR…"
+                  [ngModel]="noteText()"
+                  (ngModelChange)="noteText.set($event)"
+                ></textarea>
+                <div class="note-actions">
+                  <label class="visibility">
+                    Vidljivost
+                    <select [ngModel]="notePublic()" (ngModelChange)="notePublic.set($event)">
+                      <option [ngValue]="true">Javno</option>
+                      <option [ngValue]="false">Privatno</option>
+                    </select>
+                  </label>
+                  <button
+                    class="save"
+                    (click)="saveNote(r.number)"
+                    [disabled]="noteBusy() || !noteText().trim()"
+                  >
+                    Sačuvaj
+                  </button>
+                  @if (r.annotation) {
+                    <button class="remove" (click)="removeNote(r.number)" [disabled]="noteBusy()">
+                      Ukloni
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <div class="detail-grid">
+
+                <div class="detail-block">
+                  <h4>Pokrivenost (coverage)</h4>
+                  @if (r.coverage; as c) {
+                    <p>
+                      Pre: <b>{{ pct(c.coverageBefore) }}</b> → Posle: <b>{{ pct(c.coverageAfter) }}</b>
+                      · Δ
+                      <span [class.good]="(c.coverageDelta ?? 0) > 0" [class.bad]="(c.coverageDelta ?? 0) < 0">
+                        {{ deltaPct(c.coverageDelta) }}
+                      </span>
+                    </p>
+                    <p>
+                      Unapređeno revizijom:
+                      @if (c.improvedByReview) { <span class="badge good">da</span> }
+                      @else { <span class="badge">ne</span> }
+                      @if (c.testsAddedAfterReview) {
+                        <span class="badge tests" title="Commit posle revizije dira test fajlove">+ testovi</span>
+                      }
+                    </p>
+                    <p class="muted small">
+                      Recenzenti: {{ c.contributingReviewers.length ? c.contributingReviewers.join(', ') : '—' }}
+                    </p>
+                  } @else {
+                    <p class="muted">Nema izmerene pokrivenosti — klikni Sync.</p>
+                  }
+                </div>
+
+                <div class="detail-block">
+                  <h4>Održivost (maintainability)</h4>
+                  @if (r.maintainability; as m) {
+                    <p>
+                      Prekršaji: <b>{{ num(m.before?.violations) }}</b> → <b>{{ num(m.after?.violations) }}</b>
+                      · Δ
+                      <span [class.good]="(m.violationsDelta ?? 0) < 0" [class.bad]="(m.violationsDelta ?? 0) > 0">
+                        {{ m.violationsDelta == null ? '—' : (m.violationsDelta > 0 ? '+' : '') + m.violationsDelta }}
+                      </span>
+                    </p>
+                    <p class="muted small">
+                      NOP max: {{ num(m.before?.nopMax) }} → {{ num(m.after?.nopMax) }} · MELOC max:
+                      {{ num(m.before?.melocMax) }} → {{ num(m.after?.melocMax) }}
+                    </p>
+                    <p>
+                      Unapređeno revizijom:
+                      @if (m.improvedByReview) { <span class="badge good">da</span> }
+                      @else { <span class="badge">ne</span> }
+                    </p>
+                    <p class="muted small">
+                      Recenzenti: {{ m.contributingReviewers.length ? m.contributingReviewers.join(', ') : '—' }}
+                    </p>
+                  } @else {
+                    <p class="muted">Nema izmerene održivosti — klikni Sync.</p>
+                  }
+                </div>
+              </div>
+
+              <div class="assess" (click)="$event.stopPropagation()">
+                <div class="assess-head">
+                  <h4>Procena revizije (LLM · iz CI-ja)</h4>
+                  <button (click)="pullFromCi(r.number)" [disabled]="assessBusy()">
+                    {{ assessBusy() ? 'Povlačim…' : 'Osveži iz CI-ja' }}
+                  </button>
+                </div>
+
+                @if (assessError()) {
+                  <p class="error">{{ assessError() }}</p>
+                } @else if (assessment(); as a) {
+                  <p class="muted small">
+                    Problema: {{ a.problemsTotal }} · uočeno: {{ a.addressed }} · promašeno:
+                    {{ a.missed }}@if (a.model) { · {{ a.model }} }
+                  </p>
+                  @if (a.summary) {
+                    <p>{{ a.summary }}</p>
+                  }
+
+                  @if (a.problems.length) {
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Status</th>
+                          <th>Tip</th>
+                          <th>Fajl</th>
+                          <th>Metoda</th>
+                          <th>Problem</th>
+                          <th>Napomena</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (p of a.problems; track p.file + p.method + p.rules + p.detail) {
+                          <tr>
+                            <td>
+                              @if (p.addressed) {
+                                <span class="badge good">uočeno</span>
+                              } @else {
+                                <span class="badge bad">promašeno</span>
+                              }
+                            </td>
+                            <td>
+                              @if (p.kind === 'coverage') {
+                                <span class="badge">pokrivenost</span>
+                              } @else {
+                                <span class="badge">održivost</span>
+                              }
+                            </td>
+                            <td class="mono">{{ p.file }}</td>
+                            <td class="mono">{{ p.method || '—' }}</td>
+                            <td>{{ p.detail || p.rules }}</td>
+                            <td class="muted small">{{ p.note }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  } @else {
+                    <p class="muted small">Nema izmerenih problema na kodu koji je PR dirao.</p>
+                  }
+
+                } @else {
+                  <p class="muted small">
+                    Nema CI procene za ovaj PR — pojavljuje se automatski posle predaje revizije
+                    (assess-review). „Osveži iz CI-ja" povlači najnoviju.
+                  </p>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+
+  <div class="pager">
+    <button (click)="prevPage()" [disabled]="page() <= 1">← Prethodna</button>
+    <span class="muted small">
+      Strana {{ page() }} / {{ totalPages() }} · ukupno {{ total() }}
+    </span>
+    <button (click)="nextPage()" [disabled]="page() >= totalPages()">Sledeća →</button>
+  </div>
+}
