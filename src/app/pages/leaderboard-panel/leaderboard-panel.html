@@ -1,0 +1,52 @@
+<h1>Leaderboard</h1>
+
+@if (courses.isLoading()) {
+  <p class="muted">Učitavanje…</p>
+} @else if ((courses.value() ?? []).length === 0) {
+  <p class="muted">Nema kurseva. Dodaj kurs na stranici Upravljanje.</p>
+} @else {
+  <div class="filters">
+    <label>
+      Kurs
+      <select [ngModel]="courseId()" (ngModelChange)="onCourseChange($event)" name="course">
+        @for (c of courses.value() ?? []; track c.id) {
+          <option [ngValue]="c.id">{{ c.code }} — {{ c.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Tim
+      <select [ngModel]="selectedTeamId()" (ngModelChange)="onTeamChange($event)" name="team">
+        <option [ngValue]="null">Svi timovi (ceo kurs)</option>
+        @for (t of courseTeams(); track t.id) {
+          <option [ngValue]="t.id">{{ t.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Pretraga
+      <input
+        type="search"
+        placeholder="Pretraga po recenzentu ili autoru…"
+        [value]="searchInput()"
+        (input)="searchInput.set($any($event.target).value)"
+      />
+    </label>
+  </div>
+
+  @if (result.isLoading()) {
+    <p class="muted">Računam… (analizira coverage i održivost po repo-ima)</p>
+  } @else if (result.error()) {
+    <p class="error">Greška pri učitavanju rang liste.</p>
+  } @else {
+    <app-leaderboard-table [entries]="entries()" />
+
+    <div class="pager">
+      <button (click)="prevPage()" [disabled]="page() <= 1">← Prethodna</button>
+      <span class="muted small">Strana {{ page() }} / {{ totalPages() }} · ukupno {{ total() }}</span>
+      <button (click)="nextPage()" [disabled]="page() >= totalPages()">Sledeća →</button>
+    </div>
+  }
+}

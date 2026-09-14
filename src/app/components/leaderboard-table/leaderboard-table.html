@@ -1,0 +1,64 @@
+@if (entries().length === 0) {
+  <p class="muted">Nema podataka za rang listu.</p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Student</th>
+        <th>Tim</th>
+        <th>PR-ova recenzirano</th>
+        <th>Komentara</th>
+        <th>Coverage ↑</th>
+        <th>Održivost ↑</th>
+        <th>Skor</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (e of entries(); track e.login; let i = $index) {
+        <tr class="clickable" [class.top]="i < 3" (click)="toggle(e.login)">
+          <td class="rank">{{ medal(i) || i + 1 }}</td>
+          <td class="login">
+            <span class="caret">{{ expanded() === e.login ? '▾' : '▸' }}</span>
+            {{ e.login }}
+          </td>
+          <td class="teams">{{ e.teams.length ? e.teams.join(', ') : '—' }}</td>
+          <td>{{ e.prsReviewed }}</td>
+          <td>{{ e.comments }}</td>
+          <td [class.good]="e.coverageImprovements > 0">{{ e.coverageImprovements }}</td>
+          <td [class.good]="e.maintainabilityImprovements > 0">{{ e.maintainabilityImprovements }}</td>
+          <td class="score">{{ e.score }}</td>
+        </tr>
+
+        @if (expanded() === e.login) {
+          <tr class="detail">
+            <td colspan="8">
+              @if (e.pullRequests.length === 0) {
+                <span class="muted">Nema recenziranih PR-ova.</span>
+              } @else {
+                <ul class="prs">
+                  @for (pr of e.pullRequests; track pr.repoId + '#' + pr.number) {
+                    <li [class.marked]="pr.instructorComment">
+                      <a [href]="prUrl(pr.repoFullName, pr.number)" target="_blank" rel="noopener">
+                        {{ pr.repoFullName }}#{{ pr.number }} ↗
+                      </a>
+                      <span class="pr-title">{{ pr.title }}</span>
+                      @if (pr.coverageImproved) { <span class="badge good">coverage ↑</span> }
+                      @if (pr.maintainabilityImproved) { <span class="badge good">održivost ↑</span> }
+                      @if (pr.instructorComment) {
+                        <span class="note-badge" [class.private]="!pr.instructorCommentIsPublic">
+                          📌 {{ pr.instructorComment }}
+                          <span class="vis">({{ pr.instructorCommentIsPublic ? 'javno' : 'privatno' }})</span>
+                        </span>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+}

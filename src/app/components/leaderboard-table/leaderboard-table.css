@@ -1,0 +1,125 @@
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  margin-top: 1rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.rank {
+  width: 3rem;
+  font-size: 1.05rem;
+}
+
+.login {
+  font-weight: 600;
+}
+
+.score {
+  font-weight: 700;
+}
+
+tr.top {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+tr.clickable {
+  cursor: pointer;
+}
+
+tr.clickable:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.caret {
+  display: inline-block;
+  width: 1rem;
+  color: var(--muted);
+}
+
+tr.detail td {
+  background: color-mix(in srgb, var(--muted) 6%, transparent);
+}
+
+.prs {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.prs li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.prs a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pr-title {
+  color: var(--muted);
+}
+
+.prs li.marked a {
+  color: var(--good);
+}
+
+.note-badge {
+  display: inline-block;
+  padding: 0.05rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+.note-badge.private {
+  background: color-mix(in srgb, var(--muted) 18%, transparent);
+  color: var(--muted);
+}
+
+.note-badge .vis {
+  opacity: 0.75;
+  font-size: 0.72rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: color-mix(in srgb, var(--muted) 18%, transparent);
+}
+
+.badge.good {
+  background: color-mix(in srgb, var(--good) 22%, transparent);
+  color: var(--good);
+}
+
+.good {
+  color: var(--good);
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--muted);
+}
