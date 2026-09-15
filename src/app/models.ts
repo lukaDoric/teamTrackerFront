@@ -105,10 +105,25 @@ export interface ReviewProblem {
 export interface ReviewCommentAssessment {
   commentGitHubId: number;
   authorLogin: string | null;
+  source: string | null;
   excerpt: string | null;
   onPoint: boolean;
   aspect: string | null;
+  tone: string | null;
+  reason: string | null;
+  hasCodeSnippet: boolean;
+  linkCount: number;
   note: string | null;
+}
+
+export interface CommentStats {
+  total: number;
+  onPoint: number;
+  withCodeSnippet: number;
+  withLinks: number;
+  bySource: Record<string, number>;
+  byTone: Record<string, number>;
+  byReason: Record<string, number>;
 }
 
 export interface ReviewAssessment {
@@ -122,6 +137,7 @@ export interface ReviewAssessment {
   missed: number;
   problems: ReviewProblem[];
   comments: ReviewCommentAssessment[];
+  commentStats?: CommentStats;
 }
 
 export interface PrAnnotation {

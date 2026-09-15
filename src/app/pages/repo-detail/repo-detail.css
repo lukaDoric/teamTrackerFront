@@ -33,6 +33,29 @@
   background: #fdecea;
   color: #b3261e;
 }
+
+.cstats {
+  margin-top: 0.75rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+
+.cstats h5 {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+}
+
+.cstats-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.3rem;
+}
+
+.cstats-row .muted {
+  min-width: 4.5rem;
+}
 .badge.good {
   background: #e6f4ea;
   color: #1e7e34;

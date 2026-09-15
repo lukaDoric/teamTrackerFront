@@ -332,6 +332,34 @@
                     <p class="muted small">Nema izmerenih problema na kodu koji je PR dirao.</p>
                   }
 
+                  @if (a.commentStats; as s) {
+                    @if (s.total) {
+                      <div class="cstats">
+                        <h5>Komentari ({{ s.total }})</h5>
+                        <div class="cstats-row">
+                          <span class="muted small">Ton:</span>
+                          @for (t of entries(s.byTone); track t[0]) {
+                            <span class="badge" [class.bad]="t[0] === 'hostile' || t[0] === 'passive-aggressive'">
+                              {{ toneLabel(t[0]) }}: {{ t[1] }}
+                            </span>
+                          }
+                        </div>
+                        <div class="cstats-row">
+                          <span class="muted small">Razlog:</span>
+                          @for (r of entries(s.byReason); track r[0]) {
+                            <span class="badge">{{ reasonLabel(r[0]) }}: {{ r[1] }}</span>
+                          }
+                        </div>
+                        <div class="cstats-row">
+                          <span class="muted small">Oblik:</span>
+                          <span class="badge">suštinskih: {{ s.onPoint }}</span>
+                          <span class="badge">sa isečkom koda: {{ s.withCodeSnippet }}</span>
+                          <span class="badge">sa linkom: {{ s.withLinks }}</span>
+                        </div>
+                      </div>
+                    }
+                  }
+
                 } @else {
                   <p class="muted small">
                     Nema CI procene za ovaj PR — pojavljuje se automatski posle predaje revizije

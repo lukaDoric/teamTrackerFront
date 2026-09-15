@@ -182,6 +182,29 @@ export class RepoDetail {
   num(x: number | null | undefined): string {
     return x == null ? '—' : (Math.round(x * 100) / 100).toString();
   }
+  entries(map: Record<string, number> | undefined): [string, number][] {
+    return Object.entries(map ?? {}).sort((a, b) => b[1] - a[1]);
+  }
+  toneLabel(t: string): string {
+    return (
+      {
+        constructive: 'konstruktivan',
+        neutral: 'neutralan',
+        'passive-aggressive': 'pasivno-agresivan',
+        hostile: 'neprijateljski',
+      }[t] ?? t
+    );
+  }
+  reasonLabel(r: string): string {
+    return (
+      {
+        flaw: 'greška/rizik',
+        performance: 'performanse',
+        preference: 'lični ukus',
+        'style-convention': 'konvencija',
+      }[r] ?? r
+    );
+  }
   hours(x: number | null | undefined): string {
     if (x == null) return '—';
     if (x < 1) return Math.round(x * 60) + ' min';
