@@ -4,7 +4,7 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Api } from '../../api';
-import { Paged, PrOverviewRow, RepositoryListItem, ReviewAssessment } from '../../models';
+import { Paged, PrOverviewRow, ProcessMetrics, RepositoryListItem, ReviewAssessment } from '../../models';
 
 const PAGE_SIZE = 20;
 
@@ -56,6 +56,10 @@ export class RepoDetail {
     if (this.search()) q.set('search', this.search());
     return `/api/repositories/${this.repoId()}/pr-overview?${q.toString()}`;
   });
+
+  readonly metrics = httpResource<ProcessMetrics>(() =>
+    this.api.isBrowser ? `/api/repositories/${this.repoId()}/process-metrics` : undefined,
+  );
 
   private readonly repositories = httpResource<RepositoryListItem[]>(() =>
     this.api.isBrowser ? '/api/repositories' : undefined,
@@ -163,6 +167,7 @@ export class RepoDetail {
 
   private finishRefresh(): void {
     this.overview.reload();
+    this.metrics.reload();
     this.busy.set(false);
     this.phase.set(null);
   }
@@ -176,5 +181,11 @@ export class RepoDetail {
   }
   num(x: number | null | undefined): string {
     return x == null ? '—' : (Math.round(x * 100) / 100).toString();
+  }
+  hours(x: number | null | undefined): string {
+    if (x == null) return '—';
+    if (x < 1) return Math.round(x * 60) + ' min';
+    if (x < 48) return x.toFixed(1) + ' h';
+    return (x / 24).toFixed(1) + ' d';
   }
 }

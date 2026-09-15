@@ -35,6 +35,20 @@ export interface RefreshStatus {
   error: string | null;
 }
 
+export interface ProcessMetrics {
+  pullRequests: number;
+  merged: number;
+  open: number;
+  abandoned: number;
+  mergedWithoutReview: number;
+  mergedWithoutReviewRate: number;
+  abandonedRate: number;
+  pickupTimeHours: number | null;
+  cycleTimeHours: number | null;
+  reviewTimeHours: number | null;
+  openTimeHours: number | null;
+}
+
 export interface PrAnalysis {
   number: number;
   title: string;

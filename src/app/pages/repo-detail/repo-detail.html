@@ -13,6 +13,52 @@
   </p>
 }
 
+@if (metrics.value(); as m) {
+  <section class="metrics">
+    <div class="metrics-group">
+      <h3>Kvalitet praćenja</h3>
+      <div class="metric-grid">
+        <div class="metric" [class.alarm]="m.mergedWithoutReview > 0">
+          <span class="metric-value">{{ m.mergedWithoutReview }}</span>
+          <span class="metric-label">spojeno bez revizije</span>
+          <span class="metric-sub">{{ pct(m.mergedWithoutReviewRate) }} od spojenih</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ hours(m.pickupTimeHours) }}</span>
+          <span class="metric-label">do prvog odziva</span>
+          <span class="metric-sub">medijana</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="metrics-group">
+      <h3>Procesne mere</h3>
+      <div class="metric-grid">
+        <div class="metric">
+          <span class="metric-value">{{ hours(m.cycleTimeHours) }}</span>
+          <span class="metric-label">od otvaranja do spajanja</span>
+          <span class="metric-sub">medijana</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ hours(m.reviewTimeHours) }}</span>
+          <span class="metric-label">trajanje revizije</span>
+          <span class="metric-sub">do odobrenja</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ hours(m.openTimeHours) }}</span>
+          <span class="metric-label">otvoreni PR-ovi</span>
+          <span class="metric-sub">{{ m.open }} otvoreno</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ m.abandoned }}</span>
+          <span class="metric-label">napušteno</span>
+          <span class="metric-sub">{{ pct(m.abandonedRate) }} od ukupno {{ m.pullRequests }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+}
+
 <p class="muted small">
   Pokrivenost: ▲ = coverage porastao, ▼ = pao. Održivost: ▲ = manje prekršaja (bolje), ▼ = više
   (gore). Klikni red za detalje.
