@@ -56,6 +56,32 @@
         </div>
       </div>
     </div>
+
+    <div class="metrics-group wide">
+      <h3>Veličina i diskusija</h3>
+      <div class="metric-grid">
+        <div class="metric">
+          <span class="metric-value">{{ num(m.pullRequestSize) }}</span>
+          <span class="metric-label">izmenjenih linija</span>
+          <span class="metric-sub">medijana po PR-u</span>
+        </div>
+        <div class="metric" [class.alarm]="m.largePullRequests > 0">
+          <span class="metric-value">{{ m.largePullRequests }}</span>
+          <span class="metric-label">preko 400 linija</span>
+          <span class="metric-sub">{{ pct(m.largePullRequestRate) }} izmerenih</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ m.commentThreads }}</span>
+          <span class="metric-label">niti diskusije</span>
+          <span class="metric-sub">{{ m.threadsWithReply }} sa odgovorom</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ num(m.commentDepth) }}</span>
+          <span class="metric-label">poruka po niti</span>
+          <span class="metric-sub">medijana</span>
+        </div>
+      </div>
+    </div>
   </section>
 }
 

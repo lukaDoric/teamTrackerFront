@@ -47,6 +47,12 @@ export interface ProcessMetrics {
   cycleTimeHours: number | null;
   reviewTimeHours: number | null;
   openTimeHours: number | null;
+  pullRequestSize: number | null;
+  largePullRequests: number;
+  largePullRequestRate: number;
+  commentThreads: number;
+  threadsWithReply: number;
+  commentDepth: number | null;
 }
 
 export interface PrAnalysis {
