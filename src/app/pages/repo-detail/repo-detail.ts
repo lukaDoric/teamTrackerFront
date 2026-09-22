@@ -205,6 +205,25 @@ export class RepoDetail {
       }[r] ?? r
     );
   }
+  kindLabel(k: string | null): string {
+    if (!k) return 'nerazvrstano';
+    return { nepoznato: 'nerazvrstano' }[k] ?? k;
+  }
+  sourceLabel(s: string | null): string {
+    if (!s) return 'nepoznato';
+    if (s.startsWith('telo revizije')) return s.replace('telo revizije — ', 'telo: ');
+    return { 'opsti komentar': 'opšti komentar' }[s] ?? s;
+  }
+  kindClass(k: string | null): string {
+    return (
+      {
+        nedostatak: 'k-nedostatak',
+        pohvala: 'k-pohvala',
+        pitanje: 'k-pitanje',
+        'zaključak': 'k-zakljucak',
+      }[k ?? ''] ?? ''
+    );
+  }
   hours(x: number | null | undefined): string {
     if (x == null) return '—';
     if (x < 1) return Math.round(x * 60) + ' min';

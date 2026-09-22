@@ -56,6 +56,65 @@
 .cstats-row .muted {
   min-width: 4.5rem;
 }
+
+.badge.k-nedostatak {
+  background: color-mix(in srgb, #b3261e 16%, transparent);
+  color: #b3261e;
+}
+
+.badge.k-pohvala {
+  background: color-mix(in srgb, var(--good) 22%, transparent);
+  color: var(--good);
+}
+
+.badge.k-pitanje {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+.badge.k-zakljucak {
+  background: color-mix(in srgb, var(--muted) 26%, transparent);
+}
+
+.clist {
+  margin-top: 0.6rem;
+}
+
+.clist summary {
+  cursor: pointer;
+  user-select: none;
+}
+
+table.mini {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  table-layout: fixed;
+}
+
+table.mini th,
+table.mini td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+
+table.mini th {
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+table.mini td:nth-child(6) {
+  width: 44%;
+}
+
+.note {
+  margin-top: 0.2rem;
+  font-style: italic;
+}
 .badge.good {
   background: #e6f4ea;
   color: #1e7e34;

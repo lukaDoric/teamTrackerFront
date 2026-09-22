@@ -285,7 +285,8 @@
                 } @else if (assessment(); as a) {
                   <p class="muted small">
                     Problema: {{ a.problemsTotal }} · uočeno: {{ a.addressed }} · promašeno:
-                    {{ a.missed }}@if (a.model) { · {{ a.model }} }
+                    {{ a.missed }}@if (a.model) { · {{ a.model }} }@if (a.measurement?.version) { ·
+                    merenje {{ a.measurement!.version }} }
                   </p>
                   @if (a.summary) {
                     <p>{{ a.summary }}</p>
@@ -336,6 +337,30 @@
                     @if (s.total) {
                       <div class="cstats">
                         <h5>Komentari ({{ s.total }})</h5>
+                        @if (s.byKind) {
+                          <div class="cstats-row">
+                            <span class="muted small">Vrsta:</span>
+                            @for (k of entries(s.byKind); track k[0]) {
+                              <span class="badge" [class]="kindClass(k[0])">
+                                {{ kindLabel(k[0]) }}: {{ k[1] }}
+                              </span>
+                            }
+                          </div>
+                        }
+                        @if (s.byAspect) {
+                          <div class="cstats-row">
+                            <span class="muted small">Aspekt:</span>
+                            @for (a2 of entries(s.byAspect); track a2[0]) {
+                              <span class="badge">{{ a2[0] }}: {{ a2[1] }}</span>
+                            }
+                          </div>
+                        }
+                        <div class="cstats-row">
+                          <span class="muted small">Izvor:</span>
+                          @for (sr of entries(s.bySource); track sr[0]) {
+                            <span class="badge">{{ sourceLabel(sr[0]) }}: {{ sr[1] }}</span>
+                          }
+                        </div>
                         <div class="cstats-row">
                           <span class="muted small">Ton:</span>
                           @for (t of entries(s.byTone); track t[0]) {
@@ -356,6 +381,43 @@
                           <span class="badge">sa isečkom koda: {{ s.withCodeSnippet }}</span>
                           <span class="badge">sa linkom: {{ s.withLinks }}</span>
                         </div>
+
+                        @if (a.comments?.length) {
+                          <details class="clist">
+                            <summary class="muted small">Pojedinačni komentari ({{ a.comments.length }})</summary>
+                            <table class="mini">
+                              <thead>
+                                <tr>
+                                  <th>Izvor</th>
+                                  <th>Vrsta</th>
+                                  <th>Aspekt</th>
+                                  <th>Ton</th>
+                                  <th>Suštinski</th>
+                                  <th>Komentar</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                @for (c of a.comments; track c.commentGitHubId + '-' + $index) {
+                                  <tr>
+                                    <td class="small">{{ sourceLabel(c.source) }}</td>
+                                    <td class="small">
+                                      <span class="badge" [class]="kindClass(c.kind)">{{ kindLabel(c.kind) }}</span>
+                                    </td>
+                                    <td class="small">{{ c.aspect || '—' }}</td>
+                                    <td class="small">{{ c.tone ? toneLabel(c.tone) : '—' }}</td>
+                                    <td class="small">{{ c.onPoint ? 'da' : 'ne' }}</td>
+                                    <td class="small">
+                                      {{ c.excerpt }}
+                                      @if (c.note) {
+                                        <div class="muted small note">{{ c.note }}</div>
+                                      }
+                                    </td>
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          </details>
+                        }
                       </div>
                     }
                   }

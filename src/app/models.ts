@@ -108,6 +108,8 @@ export interface ReviewCommentAssessment {
   source: string | null;
   excerpt: string | null;
   onPoint: boolean;
+  section: string | null;
+  kind: string | null;
   aspect: string | null;
   tone: string | null;
   reason: string | null;
@@ -122,8 +124,15 @@ export interface CommentStats {
   withCodeSnippet: number;
   withLinks: number;
   bySource: Record<string, number>;
+  byKind?: Record<string, number>;
+  byAspect?: Record<string, number>;
   byTone: Record<string, number>;
   byReason: Record<string, number>;
+}
+
+export interface Measurement {
+  version: string | null;
+  workflowSha: string | null;
 }
 
 export interface ReviewAssessment {
@@ -138,6 +147,7 @@ export interface ReviewAssessment {
   problems: ReviewProblem[];
   comments: ReviewCommentAssessment[];
   commentStats?: CommentStats;
+  measurement?: Measurement;
 }
 
 export interface PrAnnotation {
