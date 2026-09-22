@@ -86,7 +86,7 @@
 }
 
 <p class="muted small">
-  Pokrivenost: ▲ = coverage porastao, ▼ = pao. Održivost: ▲ = manje prekršaja (bolje), ▼ = više
+  Pokrivenost: ▲ = coverage porastao, ▼ = pao. Lakoća održavanja: ▲ = manje prekršaja (bolje), ▼ = više
   (gore). Klikni red za detalje.
 </p>
 
@@ -118,7 +118,7 @@
         <th>Autor</th>
         <th>Stanje</th>
         <th>Pokrivenost</th>
-        <th>Održivost</th>
+        <th>Lakoća održavanja</th>
       </tr>
     </thead>
     <tbody>
@@ -245,7 +245,7 @@
                 </div>
 
                 <div class="detail-block">
-                  <h4>Održivost (maintainability)</h4>
+                  <h4>Lakoća održavanja (maintainability)</h4>
                   @if (r.maintainability; as m) {
                     <p>
                       Prekršaji: <b>{{ num(m.before?.violations) }}</b> → <b>{{ num(m.after?.violations) }}</b>
@@ -267,7 +267,7 @@
                       Recenzenti: {{ m.contributingReviewers.length ? m.contributingReviewers.join(', ') : '—' }}
                     </p>
                   } @else {
-                    <p class="muted">Nema izmerene održivosti — klikni Sync.</p>
+                    <p class="muted">Nema izmerene lakoće održavanja — klikni Sync.</p>
                   }
                 </div>
               </div>
@@ -318,7 +318,7 @@
                               @if (p.kind === 'coverage') {
                                 <span class="badge">pokrivenost</span>
                               } @else {
-                                <span class="badge">održivost</span>
+                                <span class="badge">lakoća održavanja</span>
                               }
                             </td>
                             <td class="mono">{{ p.file }}</td>

@@ -10,7 +10,7 @@
         <th>PR-ova recenzirano</th>
         <th>Komentara</th>
         <th>Coverage ↑</th>
-        <th>Održivost ↑</th>
+        <th>Lakoća održavanja ↑</th>
         <th>Skor</th>
       </tr>
     </thead>
@@ -44,7 +44,7 @@
                       </a>
                       <span class="pr-title">{{ pr.title }}</span>
                       @if (pr.coverageImproved) { <span class="badge good">coverage ↑</span> }
-                      @if (pr.maintainabilityImproved) { <span class="badge good">održivost ↑</span> }
+                      @if (pr.maintainabilityImproved) { <span class="badge good">lakoća održavanja ↑</span> }
                       @if (pr.instructorComment) {
                         <span class="note-badge" [class.private]="!pr.instructorCommentIsPublic">
                           📌 {{ pr.instructorComment }}

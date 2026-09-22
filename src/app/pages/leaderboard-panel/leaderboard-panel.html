@@ -37,7 +37,7 @@
   </div>
 
   @if (result.isLoading()) {
-    <p class="muted">Računam… (analizira coverage i održivost po repo-ima)</p>
+    <p class="muted">Računam… (analizira pokrivenost i lakoću održavanja po repo-ima)</p>
   } @else if (result.error()) {
     <p class="error">Greška pri učitavanju rang liste.</p>
   } @else {
