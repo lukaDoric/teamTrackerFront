@@ -2,66 +2,10 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
-import { Course, LeaderboardEntry, Paged, ReviewedPr, Team } from '../../models';
+import { Course, LeaderboardEntry, Paged, Team } from '../../models';
 import { LeaderboardTable } from '../../components/leaderboard-table/leaderboard-table';
 
 const PAGE_SIZE = 20;
-
-const DEMO_REPO = 'lukaDoric/demo-app-psw';
-const DEMO_TITLES = [
-  'Add unit tests for OrderService',
-  'Refactor PaymentProcessor',
-  'Cover edge cases in validation',
-  'Simplify RepositoryService',
-  'Fix null handling in parser',
-  'Extract helper from controller',
-];
-
-function mockPrs(count: number, cov: number, maint: number, note?: string): ReviewedPr[] {
-  const out: ReviewedPr[] = [];
-  for (let k = 0; k < count; k++) {
-    out.push({
-      number: 40 - k,
-      title: DEMO_TITLES[k % DEMO_TITLES.length],
-      repoId: 1,
-      repoFullName: DEMO_REPO,
-      coverageImproved: k < cov,
-      maintainabilityImproved: k >= cov && k < cov + maint,
-      instructorComment: k === 0 && note ? note : null,
-      instructorCommentIsPublic: k === 0 && note ? true : null,
-    });
-  }
-  return out;
-}
-
-function mockEntry(
-  login: string,
-  team: string,
-  prsReviewed: number,
-  comments: number,
-  cov: number,
-  maint: number,
-  note?: string,
-): LeaderboardEntry {
-  return {
-    login,
-    prsReviewed,
-    comments,
-    coverageImprovements: cov,
-    maintainabilityImprovements: maint,
-    score: (cov + maint) * 3 + prsReviewed + comments,
-    teams: [team],
-    pullRequests: mockPrs(prsReviewed, cov, maint, note),
-  };
-}
-
-const DEMO_EXTRA: LeaderboardEntry[] = [
-  mockEntry('n.jovanovic', 'Tim Alfa', 12, 24, 3, 2, 'Odlična revizija — jasni komentari i traženi testovi.'),
-  mockEntry('marko-petrovic', 'Tim Alfa', 9, 18, 2, 2),
-  mockEntry('ana.ilic', 'Tim Beta', 11, 15, 2, 1, 'Uočila ozbiljan bag u parseru.'),
-  mockEntry('stefan99', 'Tim Beta', 7, 12, 1, 1),
-  mockEntry('jelena.kostic', 'Tim Gama', 6, 9, 1, 0),
-];
 
 @Component({
   selector: 'app-leaderboard-panel',
@@ -119,10 +63,7 @@ export class LeaderboardPanel {
     return `${base}?${q.toString()}`;
   });
 
-  readonly entries = computed<LeaderboardEntry[]>(() => {
-    const real = this.result.value()?.items ?? [];
-    return [...real, ...DEMO_EXTRA].sort((a, b) => b.score - a.score);
-  });
+  readonly entries = computed<LeaderboardEntry[]>(() => this.result.value()?.items ?? []);
   readonly total = computed(() => this.result.value()?.total ?? 0);
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / PAGE_SIZE)));
 

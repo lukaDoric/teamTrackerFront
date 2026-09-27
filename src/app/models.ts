@@ -135,6 +135,17 @@ export interface Measurement {
   workflowSha: string | null;
 }
 
+export interface ReviewerAssessment {
+  login: string | null;
+  summary: string | null;
+  problemsTotal: number;
+  addressed: number;
+  missed: number;
+  problems: ReviewProblem[];
+  comments: ReviewCommentAssessment[];
+  commentStats?: CommentStats;
+}
+
 export interface ReviewAssessment {
   number: number;
   sha: string;
@@ -148,6 +159,7 @@ export interface ReviewAssessment {
   comments: ReviewCommentAssessment[];
   commentStats?: CommentStats;
   measurement?: Measurement;
+  reviewers?: ReviewerAssessment[];
 }
 
 export interface PrAnnotation {

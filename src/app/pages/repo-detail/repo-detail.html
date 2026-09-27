@@ -284,141 +284,146 @@
                   <p class="error">{{ assessError() }}</p>
                 } @else if (assessment(); as a) {
                   <p class="muted small">
-                    Problema: {{ a.problemsTotal }} · uočeno: {{ a.addressed }} · promašeno:
-                    {{ a.missed }}@if (a.model) { · {{ a.model }} }@if (a.measurement?.version) { ·
+                    @if (a.model) { {{ a.model }} }@if (a.measurement?.version) { ·
                     merenje {{ a.measurement!.version }} }
                   </p>
-                  @if (a.summary) {
-                    <p>{{ a.summary }}</p>
-                  }
+                  @for (rv of reviewerAssessments(); track rv.login ?? $index) {
+                    <h5 class="reviewer">
+                      @if (rv.login) { {{ '@' + rv.login }} · }problema: {{ rv.problemsTotal }} · uočeno:
+                      {{ rv.addressed }} · promašeno: {{ rv.missed }}
+                    </h5>
+                    @if (rv.summary) {
+                      <p>{{ rv.summary }}</p>
+                    }
 
-                  @if (a.problems.length) {
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Status</th>
-                          <th>Tip</th>
-                          <th>Fajl</th>
-                          <th>Metoda</th>
-                          <th>Problem</th>
-                          <th>Napomena</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @for (p of a.problems; track p.file + p.method + p.rules + p.detail) {
+                    @if (rv.problems.length) {
+                      <table>
+                        <thead>
                           <tr>
-                            <td>
-                              @if (p.addressed) {
-                                <span class="badge good">uočeno</span>
-                              } @else {
-                                <span class="badge bad">promašeno</span>
-                              }
-                            </td>
-                            <td>
-                              @if (p.kind === 'coverage') {
-                                <span class="badge">pokrivenost</span>
-                              } @else {
-                                <span class="badge">lakoća održavanja</span>
-                              }
-                            </td>
-                            <td class="mono">{{ p.file }}</td>
-                            <td class="mono">{{ p.method || '—' }}</td>
-                            <td>{{ p.detail || p.rules }}</td>
-                            <td class="muted small">{{ p.note }}</td>
+                            <th>Status</th>
+                            <th>Tip</th>
+                            <th>Fajl</th>
+                            <th>Metoda</th>
+                            <th>Problem</th>
+                            <th>Napomena</th>
                           </tr>
-                        }
-                      </tbody>
-                    </table>
-                  } @else {
-                    <p class="muted small">Nema izmerenih problema na kodu koji je PR dirao.</p>
-                  }
+                        </thead>
+                        <tbody>
+                          @for (p of rv.problems; track p.file + p.method + p.rules + p.detail) {
+                            <tr>
+                              <td>
+                                @if (p.addressed) {
+                                  <span class="badge good">uočeno</span>
+                                } @else {
+                                  <span class="badge bad">promašeno</span>
+                                }
+                              </td>
+                              <td>
+                                @if (p.kind === 'coverage') {
+                                  <span class="badge">pokrivenost</span>
+                                } @else {
+                                  <span class="badge">lakoća održavanja</span>
+                                }
+                              </td>
+                              <td class="mono">{{ p.file }}</td>
+                              <td class="mono">{{ p.method || '—' }}</td>
+                              <td>{{ p.detail || p.rules }}</td>
+                              <td class="muted small">{{ p.note }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    } @else {
+                      <p class="muted small">Nema izmerenih problema na kodu koji je PR dirao.</p>
+                    }
 
-                  @if (a.commentStats; as s) {
-                    @if (s.total) {
-                      <div class="cstats">
-                        <h5>Komentari ({{ s.total }})</h5>
-                        @if (s.byKind) {
+                    @if (rv.commentStats; as s) {
+                      @if (s.total) {
+                        <div class="cstats">
+                          <h5>Komentari ({{ s.total }})</h5>
+                          @if (s.byKind) {
+                            <div class="cstats-row">
+                              <span class="muted small">Vrsta:</span>
+                              @for (k of entries(s.byKind); track k[0]) {
+                                <span class="badge" [class]="kindClass(k[0])">
+                                  {{ kindLabel(k[0]) }}: {{ k[1] }}
+                                </span>
+                              }
+                            </div>
+                          }
+                          @if (s.byAspect) {
+                            <div class="cstats-row">
+                              <span class="muted small">Aspekt:</span>
+                              @for (a2 of entries(s.byAspect); track a2[0]) {
+                                <span class="badge">{{ a2[0] }}: {{ a2[1] }}</span>
+                              }
+                            </div>
+                          }
                           <div class="cstats-row">
-                            <span class="muted small">Vrsta:</span>
-                            @for (k of entries(s.byKind); track k[0]) {
-                              <span class="badge" [class]="kindClass(k[0])">
-                                {{ kindLabel(k[0]) }}: {{ k[1] }}
+                            <span class="muted small">Izvor:</span>
+                            @for (sr of entries(s.bySource); track sr[0]) {
+                              <span class="badge">{{ sourceLabel(sr[0]) }}: {{ sr[1] }}</span>
+                            }
+                          </div>
+                          <div class="cstats-row">
+                            <span class="muted small">Ton:</span>
+                            @for (t of entries(s.byTone); track t[0]) {
+                              <span class="badge" [class.bad]="t[0] === 'hostile' || t[0] === 'passive-aggressive'">
+                                {{ toneLabel(t[0]) }}: {{ t[1] }}
                               </span>
                             }
                           </div>
-                        }
-                        @if (s.byAspect) {
                           <div class="cstats-row">
-                            <span class="muted small">Aspekt:</span>
-                            @for (a2 of entries(s.byAspect); track a2[0]) {
-                              <span class="badge">{{ a2[0] }}: {{ a2[1] }}</span>
+                            <span class="muted small">Razlog:</span>
+                            @for (r of entries(s.byReason); track r[0]) {
+                              <span class="badge">{{ reasonLabel(r[0]) }}: {{ r[1] }}</span>
                             }
                           </div>
-                        }
-                        <div class="cstats-row">
-                          <span class="muted small">Izvor:</span>
-                          @for (sr of entries(s.bySource); track sr[0]) {
-                            <span class="badge">{{ sourceLabel(sr[0]) }}: {{ sr[1] }}</span>
-                          }
-                        </div>
-                        <div class="cstats-row">
-                          <span class="muted small">Ton:</span>
-                          @for (t of entries(s.byTone); track t[0]) {
-                            <span class="badge" [class.bad]="t[0] === 'hostile' || t[0] === 'passive-aggressive'">
-                              {{ toneLabel(t[0]) }}: {{ t[1] }}
-                            </span>
-                          }
-                        </div>
-                        <div class="cstats-row">
-                          <span class="muted small">Razlog:</span>
-                          @for (r of entries(s.byReason); track r[0]) {
-                            <span class="badge">{{ reasonLabel(r[0]) }}: {{ r[1] }}</span>
-                          }
-                        </div>
-                        <div class="cstats-row">
-                          <span class="muted small">Oblik:</span>
-                          <span class="badge">suštinskih: {{ s.onPoint }}</span>
-                          <span class="badge">sa isečkom koda: {{ s.withCodeSnippet }}</span>
-                          <span class="badge">sa linkom: {{ s.withLinks }}</span>
-                        </div>
+                          <div class="cstats-row">
+                            <span class="muted small">Oblik:</span>
+                            <span class="badge">suštinskih: {{ s.onPoint }}</span>
+                            <span class="badge">sa isečkom koda: {{ s.withCodeSnippet }}</span>
+                            <span class="badge">sa linkom: {{ s.withLinks }}</span>
+                          </div>
 
-                        @if (a.comments?.length) {
-                          <details class="clist">
-                            <summary class="muted small">Pojedinačni komentari ({{ a.comments.length }})</summary>
-                            <table class="mini">
-                              <thead>
-                                <tr>
-                                  <th>Izvor</th>
-                                  <th>Vrsta</th>
-                                  <th>Aspekt</th>
-                                  <th>Ton</th>
-                                  <th>Suštinski</th>
-                                  <th>Komentar</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                @for (c of a.comments; track c.commentGitHubId + '-' + $index) {
+                          @if (rv.comments.length) {
+                            <details class="clist">
+                              <summary class="muted small">Pojedinačni komentari ({{ rv.comments.length }})</summary>
+                              <table class="mini">
+                                <thead>
                                   <tr>
-                                    <td class="small">{{ sourceLabel(c.source) }}</td>
-                                    <td class="small">
-                                      <span class="badge" [class]="kindClass(c.kind)">{{ kindLabel(c.kind) }}</span>
-                                    </td>
-                                    <td class="small">{{ c.aspect || '—' }}</td>
-                                    <td class="small">{{ c.tone ? toneLabel(c.tone) : '—' }}</td>
-                                    <td class="small">{{ c.onPoint ? 'da' : 'ne' }}</td>
-                                    <td class="small">
-                                      {{ c.excerpt }}
-                                      @if (c.note) {
-                                        <div class="muted small note">{{ c.note }}</div>
-                                      }
-                                    </td>
+                                    <th>Izvor</th>
+                                    <th>Vrsta</th>
+                                    <th>Aspekt</th>
+                                    <th>Ton</th>
+                                    <th>Suštinski</th>
+                                    <th>Komentar</th>
                                   </tr>
-                                }
-                              </tbody>
-                            </table>
-                          </details>
-                        }
-                      </div>
+                                </thead>
+                                <tbody>
+                                  @for (c of rv.comments; track c.commentGitHubId + '-' + $index) {
+                                    <tr>
+                                      <td class="small">{{ sourceLabel(c.source) }}</td>
+                                      <td class="small">
+                                        <span class="badge" [class]="kindClass(c.kind)">{{ kindLabel(c.kind) }}</span>
+                                      </td>
+                                      <td class="small">{{ c.aspect || '—' }}</td>
+                                      <td class="small">{{ c.tone ? toneLabel(c.tone) : '—' }}</td>
+                                      <td class="small">{{ c.onPoint ? 'da' : 'ne' }}</td>
+                                      <td class="small">
+                                        {{ c.excerpt }}
+                                        @if (c.note) {
+                                          <div class="muted small note">{{ c.note }}</div>
+                                        }
+                                      </td>
+                                    </tr>
+                                  }
+                                </tbody>
+                              </table>
+                            </details>
+                          }
+                        </div>
+                      }
                     }
                   }
 

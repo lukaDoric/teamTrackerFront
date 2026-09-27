@@ -4,7 +4,9 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Api } from '../../api';
-import { Paged, PrOverviewRow, ProcessMetrics, RepositoryListItem, ReviewAssessment } from '../../models';
+import {
+  Paged, PrOverviewRow, ProcessMetrics, RepositoryListItem, ReviewAssessment, ReviewerAssessment,
+} from '../../models';
 
 const PAGE_SIZE = 20;
 
@@ -35,6 +37,13 @@ export class RepoDetail {
   readonly assessment = signal<ReviewAssessment | null>(null);
   readonly assessBusy = signal(false);
   readonly assessError = signal<string | null>(null);
+  readonly reviewerAssessments = computed<ReviewerAssessment[]>(() => {
+    const a = this.assessment();
+    if (!a) return [];
+    if (a.reviewers?.length) return a.reviewers;
+    return [{ login: null, summary: a.summary, problemsTotal: a.problemsTotal, addressed: a.addressed,
+      missed: a.missed, problems: a.problems, comments: a.comments, commentStats: a.commentStats }];
+  });
 
   constructor() {
     effect((onCleanup) => {
