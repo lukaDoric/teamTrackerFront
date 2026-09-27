@@ -220,7 +220,8 @@ export class RepoDetail {
   }
   sourceLabel(s: string | null): string {
     if (!s) return 'nepoznato';
-    if (s.startsWith('telo revizije')) return s.replace('telo revizije — ', 'telo: ');
+    if (s === 'telo revizije') return 'telo bez šablona';
+    if (s.startsWith('telo revizije')) return s.replace('telo revizije — ', 'šablon — ');
     return { 'opsti komentar': 'opšti komentar' }[s] ?? s;
   }
   kindClass(k: string | null): string {

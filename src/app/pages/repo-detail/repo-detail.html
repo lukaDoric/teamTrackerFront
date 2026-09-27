@@ -219,7 +219,7 @@
               <div class="detail-grid">
 
                 <div class="detail-block">
-                  <h4>Pokrivenost (coverage)</h4>
+                  <h4>Pokrivenost celog repoa (pre → posle revizije)</h4>
                   @if (r.coverage; as c) {
                     <p>
                       Pre: <b>{{ pct(c.coverageBefore) }}</b> → Posle: <b>{{ pct(c.coverageAfter) }}</b>
@@ -245,17 +245,17 @@
                 </div>
 
                 <div class="detail-block">
-                  <h4>Lakoća održavanja (maintainability)</h4>
+                  <h4>Lakoća održavanja celog repoa (pre → posle revizije)</h4>
                   @if (r.maintainability; as m) {
                     <p>
-                      Prekršaji: <b>{{ num(m.before?.violations) }}</b> → <b>{{ num(m.after?.violations) }}</b>
+                      Mesta sa prekoračenjem: <b>{{ num(m.before?.violations) }}</b> → <b>{{ num(m.after?.violations) }}</b>
                       · Δ
                       <span [class.good]="(m.violationsDelta ?? 0) < 0" [class.bad]="(m.violationsDelta ?? 0) > 0">
                         {{ m.violationsDelta == null ? '—' : (m.violationsDelta > 0 ? '+' : '') + m.violationsDelta }}
                       </span>
                     </p>
                     <p class="muted small">
-                      NOP max: {{ num(m.before?.nopMax) }} → {{ num(m.after?.nopMax) }} · MELOC max:
+                      Najgore u repou — parametara: {{ num(m.before?.nopMax) }} → {{ num(m.after?.nopMax) }} · linija u metodi:
                       {{ num(m.before?.melocMax) }} → {{ num(m.after?.melocMax) }}
                     </p>
                     <p>
@@ -290,7 +290,8 @@
                   @for (rv of reviewerAssessments(); track rv.login ?? $index) {
                     <h5 class="reviewer">
                       @if (rv.login) { {{ '@' + rv.login }} · }problema: {{ rv.problemsTotal }} · uočeno:
-                      {{ rv.addressed }} · promašeno: {{ rv.missed }}
+                      {{ rv.addressed }} · promašeno: {{ rv.missed }}@if (rv.resolved) { · rešeno posle
+                      revizije: {{ rv.resolvedAddressed }} od {{ rv.addressed }} uočenih }
                     </h5>
                     @if (rv.summary) {
                       <p>{{ rv.summary }}</p>
@@ -316,6 +317,9 @@
                                   <span class="badge good">uočeno</span>
                                 } @else {
                                   <span class="badge bad">promašeno</span>
+                                }
+                                @if (p.status === 'resolved') {
+                                  <span class="badge good">rešeno</span>
                                 }
                               </td>
                               <td>

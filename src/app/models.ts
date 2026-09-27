@@ -100,6 +100,7 @@ export interface ReviewProblem {
   detail: string | null;
   addressed: boolean;
   note: string | null;
+  status?: 'open' | 'resolved';
 }
 
 export interface ReviewCommentAssessment {
@@ -141,6 +142,8 @@ export interface ReviewerAssessment {
   problemsTotal: number;
   addressed: number;
   missed: number;
+  resolved?: number;
+  resolvedAddressed?: number;
   problems: ReviewProblem[];
   comments: ReviewCommentAssessment[];
   commentStats?: CommentStats;
