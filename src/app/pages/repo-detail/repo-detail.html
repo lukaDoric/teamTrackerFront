@@ -21,12 +21,12 @@
         <div class="metric" [class.alarm]="m.mergedWithoutReview > 0">
           <span class="metric-value">{{ m.mergedWithoutReview }}</span>
           <span class="metric-label">spojeno bez revizije</span>
-          <span class="metric-sub">{{ pct(m.mergedWithoutReviewRate) }} od spojenih</span>
+          <span class="metric-sub">{{ pct(m.mergedWithoutReviewRate) }} od {{ m.merged }} spojenih</span>
         </div>
         <div class="metric">
           <span class="metric-value">{{ hours(m.pickupTimeHours) }}</span>
-          <span class="metric-label">do prvog odziva</span>
-          <span class="metric-sub">medijana</span>
+          <span class="metric-label">od otvaranja do prvog odziva</span>
+          <span class="metric-sub">medijana od {{ prs(m.pickupSamples) }}</span>
         </div>
       </div>
     </div>
@@ -37,22 +37,22 @@
         <div class="metric">
           <span class="metric-value">{{ hours(m.cycleTimeHours) }}</span>
           <span class="metric-label">od otvaranja do spajanja</span>
-          <span class="metric-sub">medijana</span>
+          <span class="metric-sub">medijana od {{ prs(m.cycleSamples) }}</span>
         </div>
         <div class="metric">
           <span class="metric-value">{{ hours(m.reviewTimeHours) }}</span>
-          <span class="metric-label">trajanje revizije</span>
-          <span class="metric-sub">do odobrenja</span>
+          <span class="metric-label">od prve revizije do odobrenja</span>
+          <span class="metric-sub">medijana od {{ prs(m.reviewTimeSamples) }}</span>
         </div>
         <div class="metric">
           <span class="metric-value">{{ hours(m.openTimeHours) }}</span>
-          <span class="metric-label">otvoreni PR-ovi</span>
-          <span class="metric-sub">{{ m.open }} otvoreno</span>
+          <span class="metric-label">starost otvorenih PR-ova</span>
+          <span class="metric-sub">medijana od {{ prs(m.open) }}</span>
         </div>
         <div class="metric">
           <span class="metric-value">{{ m.abandoned }}</span>
           <span class="metric-label">napušteno</span>
-          <span class="metric-sub">{{ pct(m.abandonedRate) }} od ukupno {{ m.pullRequests }}</span>
+          <span class="metric-sub">{{ pct(m.abandonedRate) }} od {{ prs(m.pullRequests) }}</span>
         </div>
       </div>
     </div>
@@ -62,23 +62,23 @@
       <div class="metric-grid">
         <div class="metric">
           <span class="metric-value">{{ num(m.pullRequestSize) }}</span>
-          <span class="metric-label">izmenjenih linija</span>
-          <span class="metric-sub">medijana po PR-u</span>
+          <span class="metric-label">izmenjenih linija po PR-u</span>
+          <span class="metric-sub">medijana od {{ prs(m.sizeSamples) }}</span>
         </div>
         <div class="metric" [class.alarm]="m.largePullRequests > 0">
           <span class="metric-value">{{ m.largePullRequests }}</span>
-          <span class="metric-label">preko 400 linija</span>
-          <span class="metric-sub">{{ pct(m.largePullRequestRate) }} izmerenih</span>
+          <span class="metric-label">PR-ova preko 400 linija</span>
+          <span class="metric-sub">{{ pct(m.largePullRequestRate) }} od {{ prs(m.sizeSamples) }}</span>
         </div>
         <div class="metric">
-          <span class="metric-value">{{ m.commentThreads }}</span>
-          <span class="metric-label">niti diskusije</span>
-          <span class="metric-sub">{{ m.threadsWithReply }} sa odgovorom</span>
+          <span class="metric-value">{{ m.threadsWithReply }}</span>
+          <span class="metric-label">niti diskusije sa odgovorom</span>
+          <span class="metric-sub">{{ pct(m.commentThreads ? m.threadsWithReply / m.commentThreads : null) }} od {{ m.commentThreads }} niti</span>
         </div>
         <div class="metric">
           <span class="metric-value">{{ num(m.commentDepth) }}</span>
           <span class="metric-label">poruka po niti</span>
-          <span class="metric-sub">medijana</span>
+          <span class="metric-sub">medijana od {{ m.commentThreads }} niti</span>
         </div>
       </div>
     </div>
@@ -363,6 +363,14 @@
                               }
                             </div>
                           }
+                          @if (s.bySubaspect && entries(s.bySubaspect).length) {
+                            <div class="cstats-row">
+                              <span class="muted small">Podaspekt:</span>
+                              @for (sa of entries(s.bySubaspect); track sa[0]) {
+                                <span class="badge">{{ sa[0] }}: {{ sa[1] }}</span>
+                              }
+                            </div>
+                          }
                           <div class="cstats-row">
                             <span class="muted small">Izvor:</span>
                             @for (sr of entries(s.bySource); track sr[0]) {
@@ -377,12 +385,13 @@
                               </span>
                             }
                           </div>
-                          <div class="cstats-row">
-                            <span class="muted small">Razlog:</span>
-                            @for (r of entries(s.byReason); track r[0]) {
-                              <span class="badge">{{ reasonLabel(r[0]) }}: {{ r[1] }}</span>
-                            }
-                          </div>
+                          @if (s.defects) {
+                            <div class="cstats-row">
+                              <span class="muted small">Nedostaci:</span>
+                              <span class="badge">sa predlogom: {{ s.defectsWithSuggestion }} od {{ s.defects }}</span>
+                              <span class="badge">sa obrazloženjem: {{ s.defectsWithRationale }} od {{ s.defects }}</span>
+                            </div>
+                          }
                           <div class="cstats-row">
                             <span class="muted small">Oblik:</span>
                             <span class="badge">suštinskih: {{ s.onPoint }}</span>
@@ -411,7 +420,10 @@
                                       <td class="small">
                                         <span class="badge" [class]="kindClass(c.kind)">{{ kindLabel(c.kind) }}</span>
                                       </td>
-                                      <td class="small">{{ c.aspect || '—' }}</td>
+                                      <td class="small">
+                                        {{ c.aspect || '—' }}
+                                        @if (c.subaspect) { <span class="muted"> · {{ c.subaspect }}</span> }
+                                      </td>
                                       <td class="small">{{ c.tone ? toneLabel(c.tone) : '—' }}</td>
                                       <td class="small">{{ c.onPoint ? 'da' : 'ne' }}</td>
                                       <td class="small">

@@ -53,6 +53,10 @@ export interface ProcessMetrics {
   commentThreads: number;
   threadsWithReply: number;
   commentDepth: number | null;
+  pickupSamples: number;
+  cycleSamples: number;
+  reviewTimeSamples: number;
+  sizeSamples: number;
 }
 
 export interface PrAnalysis {
@@ -112,8 +116,10 @@ export interface ReviewCommentAssessment {
   section: string | null;
   kind: string | null;
   aspect: string | null;
+  subaspect?: string | null;
   tone: string | null;
-  reason: string | null;
+  hasSuggestion?: boolean;
+  hasRationale?: boolean;
   hasCodeSnippet: boolean;
   linkCount: number;
   note: string | null;
@@ -127,8 +133,11 @@ export interface CommentStats {
   bySource: Record<string, number>;
   byKind?: Record<string, number>;
   byAspect?: Record<string, number>;
+  bySubaspect?: Record<string, number>;
   byTone: Record<string, number>;
-  byReason: Record<string, number>;
+  defects?: number;
+  defectsWithSuggestion?: number;
+  defectsWithRationale?: number;
 }
 
 export interface Measurement {

@@ -184,6 +184,12 @@ export class RepoDetail {
   pct(x: number | null): string {
     return x == null ? '—' : (x * 100).toFixed(1) + '%';
   }
+  prs(n: number): string {
+    const lastTwo = n % 100;
+    const last = n % 10;
+    const fewForm = last === 1 || (last >= 2 && last <= 4);
+    return n + (fewForm && (lastTwo < 11 || lastTwo > 14) ? ' PR-a' : ' PR-ova');
+  }
   deltaPct(x: number | null): string {
     if (x == null) return '—';
     return (x > 0 ? '+' : '') + (x * 100).toFixed(1) + '%';
@@ -202,16 +208,6 @@ export class RepoDetail {
         'passive-aggressive': 'pasivno-agresivan',
         hostile: 'neprijateljski',
       }[t] ?? t
-    );
-  }
-  reasonLabel(r: string): string {
-    return (
-      {
-        flaw: 'greška/rizik',
-        performance: 'performanse',
-        preference: 'lični ukus',
-        'style-convention': 'konvencija',
-      }[r] ?? r
     );
   }
   kindLabel(k: string | null): string {
