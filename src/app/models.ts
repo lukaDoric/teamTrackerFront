@@ -186,6 +186,8 @@ export interface PrOverviewRow {
   title: string;
   authorLogin: string | null;
   state: string;
+  baseRef: string | null;
+  targetsDefaultBranch: boolean;
   createdAt: string;
   commits: number;
   reviews: number;

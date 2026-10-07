@@ -146,7 +146,12 @@
             {{ r.title }}
           </td>
           <td>{{ r.authorLogin ?? '—' }}</td>
-          <td><span class="badge">{{ r.state }}</span></td>
+          <td>
+            <span class="badge">{{ r.state }}</span>
+            @if (!r.targetsDefaultBranch) {
+              <span class="badge" title="PR ne cilja podrazumevanu granu i ne ulazi u mere ni rang listu">→ {{ r.baseRef }}</span>
+            }
+          </td>
 
           <td>
             @if (r.coverage?.coverageDelta != null) {
