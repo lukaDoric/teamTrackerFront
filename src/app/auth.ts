@@ -5,6 +5,16 @@ import { Observable, tap } from 'rxjs';
 
 const TOKEN_KEY = 'tt_token';
 
+function isExpired(token: string): boolean {
+  try {
+    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const exp = JSON.parse(atob(payload)).exp;
+    return typeof exp !== 'number' || exp * 1000 <= Date.now();
+  } catch {
+    return true;
+  }
+}
+
 interface LoginResponse {
   token: string;
   expiresAt: string;
@@ -16,10 +26,13 @@ export class AuthService {
   private http = inject(HttpClient);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  readonly token = signal<string | null>(
-    this.isBrowser ? localStorage.getItem(TOKEN_KEY) : null,
-  );
+  readonly token = signal<string | null>(this.readStoredToken());
   readonly isTeacher = computed(() => !!this.token());
+
+  dropIfExpired(): void {
+    const token = this.token();
+    if (token && isExpired(token)) this.logout();
+  }
 
   login(username: string, password: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>('/api/auth/login', { username, password }).pipe(
@@ -33,5 +46,15 @@ export class AuthService {
   logout(): void {
     if (this.isBrowser) localStorage.removeItem(TOKEN_KEY);
     this.token.set(null);
+  }
+
+  private readStoredToken(): string | null {
+    if (!this.isBrowser) return null;
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (token && isExpired(token)) {
+      localStorage.removeItem(TOKEN_KEY);
+      return null;
+    }
+    return token;
   }
 }

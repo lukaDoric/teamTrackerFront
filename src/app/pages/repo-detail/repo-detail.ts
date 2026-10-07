@@ -93,7 +93,9 @@ export class RepoDetail {
     this.assessment.set(null);
     this.assessError.set(null);
     this.api.getCiReviewAssessment(this.repoId(), r.number).subscribe({
-      next: (a) => this.assessment.set(a),
+      next: (a) => {
+        if (this.expanded() === r.number) this.assessment.set(a);
+      },
       error: () => {},
     });
   }
@@ -101,15 +103,16 @@ export class RepoDetail {
   pullFromCi(number: number): void {
     this.assessBusy.set(true);
     this.assessError.set(null);
-    this.api.getCiReviewAssessment(this.repoId(), number).subscribe({
+    this.api.getCiReviewAssessment(this.repoId(), number, true).subscribe({
       next: (a) => {
+        this.assessBusy.set(false);
+        if (this.expanded() !== number) return;
         if (a) this.assessment.set(a);
         else this.assessError.set('Nema CI procene za ovaj PR (možda još nije pokrenuta ili je artefakt istekao).');
-        this.assessBusy.set(false);
       },
       error: () => {
-        this.assessError.set('Povlačenje iz CI-ja nije uspelo.');
         this.assessBusy.set(false);
+        if (this.expanded() === number) this.assessError.set('Povlačenje iz CI-ja nije uspelo.');
       },
     });
   }

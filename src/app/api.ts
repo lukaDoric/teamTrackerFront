@@ -33,9 +33,10 @@ export class Api {
     return this.http.get<RefreshStatus>(`/api/repositories/${repoId}/refresh-status`);
   }
 
-  getCiReviewAssessment(repoId: number, number: number): Observable<ReviewAssessment | null> {
+  getCiReviewAssessment(repoId: number, number: number, refresh = false): Observable<ReviewAssessment | null> {
     return this.http.get<ReviewAssessment | null>(
       `/api/repositories/${repoId}/pullrequests/${number}/ci-review-assessment`,
+      { params: refresh ? { refresh: 'true' } : {} },
     );
   }
 

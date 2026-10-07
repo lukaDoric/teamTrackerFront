@@ -32,6 +32,13 @@ export class Manage {
   readonly importTeamId = signal<number | null>(null);
 
   readonly busy = signal(false);
+  readonly error = signal<string | null>(null);
+
+  private fail(err: unknown, fallback: string): void {
+    const message = (err as { error?: { error?: string } })?.error?.error;
+    this.error.set(message ?? fallback);
+    this.busy.set(false);
+  }
 
   courseLabel(courseId: number | null): string {
     if (courseId == null) return '—';
@@ -44,6 +51,7 @@ export class Manage {
     const name = this.courseName().trim();
     if (!code || !name) return;
     this.busy.set(true);
+    this.error.set(null);
     this.api.createCourse(code, name, this.courseDesc().trim() || undefined).subscribe({
       next: () => {
         this.courseCode.set('');
@@ -52,7 +60,7 @@ export class Manage {
         this.courses.reload();
         this.busy.set(false);
       },
-      error: () => this.busy.set(false),
+      error: (err) => this.fail(err, 'Dodavanje kursa nije uspelo.'),
     });
   }
 
@@ -60,6 +68,7 @@ export class Manage {
     const name = this.teamName().trim();
     if (!name) return;
     this.busy.set(true);
+    this.error.set(null);
     this.api.createTeam(name, this.teamCourseId() ?? undefined).subscribe({
       next: () => {
         this.teamName.set('');
@@ -67,7 +76,7 @@ export class Manage {
         this.teams.reload();
         this.busy.set(false);
       },
-      error: () => this.busy.set(false),
+      error: (err) => this.fail(err, 'Dodavanje tima nije uspelo.'),
     });
   }
 
@@ -76,6 +85,7 @@ export class Manage {
     const teamId = this.importTeamId();
     if (!fullName || teamId == null) return;
     this.busy.set(true);
+    this.error.set(null);
     this.api.importRepository(fullName, teamId).subscribe({
       next: () => {
         this.importFullName.set('');
@@ -85,7 +95,7 @@ export class Manage {
           this.busy.set(false);
         }, 1500);
       },
-      error: () => this.busy.set(false),
+      error: (err) => this.fail(err, 'Uvoz repozitorijuma nije uspeo.'),
     });
   }
 }

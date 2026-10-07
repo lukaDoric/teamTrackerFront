@@ -5,5 +5,6 @@ import { AuthService } from './auth';
 export const teacherGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
+  auth.dropIfExpired();
   return auth.isTeacher() ? true : router.createUrlTree(['/leaderboard']);
 };

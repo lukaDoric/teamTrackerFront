@@ -3,6 +3,9 @@
   <a class="link" routerLink="/">← Pregled kurseva</a>
 </div>
 <p class="muted">Ovde dodaješ kurseve, timove i uvoziš repozitorijume. Pregled je na početnoj strani.</p>
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
 
 <div class="grid">
 
