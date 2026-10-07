@@ -36,26 +36,48 @@
               } @else {
                 <ul class="prs">
                   @for (pr of e.pullRequests; track pr.repoId + '#' + pr.number) {
-                    <li [class.marked]="pr.instructorComment">
-                      <a [href]="prUrl(pr.repoFullName, pr.number)" target="_blank" rel="noopener">
-                        {{ pr.repoFullName }}#{{ pr.number }} ↗
-                      </a>
-                      <span class="pr-title">{{ pr.title }}</span>
-                      <span class="badge">{{ pr.points }} poena</span>
+                    <li class="pr" [class.marked]="pr.instructorComment">
+                      <div class="pr-head">
+                        <a [href]="prUrl(pr.repoFullName, pr.number)" target="_blank" rel="noopener">
+                          {{ pr.repoFullName }}#{{ pr.number }} ↗
+                        </a>
+                        <span class="pr-title">{{ pr.title }}</span>
+                        <span class="pr-points">{{ pr.points }} poena</span>
+                      </div>
+
                       @if (pr.instructorComment) {
                         <span class="note-badge" [class.private]="!pr.instructorCommentIsPublic">
                           📌 {{ pr.instructorComment }}
                           <span class="vis">({{ pr.instructorCommentIsPublic ? 'javno' : 'privatno' }})</span>
                         </span>
                       }
-                      <ul class="items">
-                        @for (it of pr.items; track $index) {
-                          <li>
-                            <span class="badge" [class.good]="it.kind === 'unapređenje'">+{{ it.points }} {{ label(it.kind) }}</span>
-                            @if (it.text) { <span class="item-text">{{ it.text }}</span> }
-                          </li>
+
+                      <div class="breakdown">
+                        @for (g of groups(pr); track g.kind) {
+                          <span class="chip" [class.good]="g.kind === 'unapređenje'">
+                            {{ g.label }}
+                            @if (g.count > 1) { <b>{{ g.count }} × {{ g.points }} = {{ g.total }}</b> } @else { <b>{{ g.total }}</b> }
+                          </span>
                         }
-                      </ul>
+                      </div>
+
+                      @if (hasTexts(pr)) {
+                        <details class="texts">
+                          <summary>Komentari i problemi koji su doneli poene</summary>
+                          @for (g of groups(pr); track g.kind) {
+                            @if (g.texts.length) {
+                              <div class="group">
+                                <div class="group-title">{{ g.label }} ({{ g.count }})</div>
+                                <ul>
+                                  @for (t of g.texts; track $index) {
+                                    <li>{{ t }}</li>
+                                  }
+                                </ul>
+                              </div>
+                            }
+                          }
+                        </details>
+                      }
                     </li>
                   }
                 </ul>

@@ -124,17 +124,77 @@ tr.detail td {
   color: var(--muted);
 }
 
-.items {
-  list-style: none;
-  margin: 0;
-  padding: 0 0 0 1.25rem;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+.prs > li.pr {
+  display: block;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px dashed var(--border);
 }
 
-.item-text {
-  color: var(--muted);
+.prs > li.pr:last-child {
+  border-bottom: none;
+}
+
+.pr-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pr-points {
+  margin-left: auto;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.chip {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  background: color-mix(in srgb, var(--muted) 14%, transparent);
+}
+
+.chip b {
+  margin-left: 0.25rem;
+}
+
+.chip.good {
+  background: color-mix(in srgb, var(--good) 20%, transparent);
+  color: var(--good);
+}
+
+.texts {
+  margin-top: 0.4rem;
   font-size: 0.85rem;
+}
+
+.texts summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.texts .group {
+  margin-top: 0.4rem;
+}
+
+.texts .group-title {
+  font-weight: 600;
+}
+
+.texts ul {
+  margin: 0.15rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--muted);
+}
+
+.texts ul li {
+  display: list-item;
 }
