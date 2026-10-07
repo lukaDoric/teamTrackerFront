@@ -196,13 +196,19 @@ export interface PrOverviewRow {
   annotation: PrAnnotation | null;
 }
 
+export interface ScoreItem {
+  kind: string;
+  points: number;
+  text: string | null;
+}
+
 export interface ReviewedPr {
   number: number;
   title: string;
   repoId: number;
   repoFullName: string;
-  coverageImproved: boolean;
-  maintainabilityImproved: boolean;
+  points: number;
+  items: ScoreItem[];
   instructorComment: string | null;
   instructorCommentIsPublic: boolean | null;
 }
@@ -211,8 +217,7 @@ export interface LeaderboardEntry {
   login: string;
   prsReviewed: number;
   comments: number;
-  coverageImprovements: number;
-  maintainabilityImprovements: number;
+  improvements: number;
   score: number;
   teams: string[];
   pullRequests: ReviewedPr[];

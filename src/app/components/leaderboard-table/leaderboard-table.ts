@@ -20,6 +20,10 @@ export class LeaderboardTable {
     return index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
   }
 
+  label(kind: string): string {
+    return kind === 'pr' ? 'recenziran PR' : kind === 'unapređenje' ? 'unapređenje nakon revizije' : kind;
+  }
+
   prUrl(repoFullName: string, number: number): string {
     return `https://github.com/${repoFullName}/pull/${number}`;
   }

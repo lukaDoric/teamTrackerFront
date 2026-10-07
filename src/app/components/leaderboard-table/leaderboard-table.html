@@ -7,10 +7,9 @@
         <th>#</th>
         <th>Student</th>
         <th>Tim</th>
-        <th>PR-ova recenzirano</th>
-        <th>Komentara</th>
-        <th>Coverage ↑</th>
-        <th>Lakoća održavanja ↑</th>
+        <th>PRova recenzirano</th>
+        <th>Bodovanih komentara</th>
+        <th>Unapređenja nakon revizije</th>
         <th>Skor</th>
       </tr>
     </thead>
@@ -25,16 +24,15 @@
           <td class="teams">{{ e.teams.length ? e.teams.join(', ') : '—' }}</td>
           <td>{{ e.prsReviewed }}</td>
           <td>{{ e.comments }}</td>
-          <td [class.good]="e.coverageImprovements > 0">{{ e.coverageImprovements }}</td>
-          <td [class.good]="e.maintainabilityImprovements > 0">{{ e.maintainabilityImprovements }}</td>
+          <td [class.good]="e.improvements > 0">{{ e.improvements }}</td>
           <td class="score">{{ e.score }}</td>
         </tr>
 
         @if (expanded() === e.login) {
           <tr class="detail">
-            <td colspan="8">
+            <td colspan="7">
               @if (e.pullRequests.length === 0) {
-                <span class="muted">Nema recenziranih PR-ova.</span>
+                <span class="muted">Nema recenziranih PRova.</span>
               } @else {
                 <ul class="prs">
                   @for (pr of e.pullRequests; track pr.repoId + '#' + pr.number) {
@@ -43,14 +41,21 @@
                         {{ pr.repoFullName }}#{{ pr.number }} ↗
                       </a>
                       <span class="pr-title">{{ pr.title }}</span>
-                      @if (pr.coverageImproved) { <span class="badge good">coverage ↑</span> }
-                      @if (pr.maintainabilityImproved) { <span class="badge good">lakoća održavanja ↑</span> }
+                      <span class="badge">{{ pr.points }} poena</span>
                       @if (pr.instructorComment) {
                         <span class="note-badge" [class.private]="!pr.instructorCommentIsPublic">
                           📌 {{ pr.instructorComment }}
                           <span class="vis">({{ pr.instructorCommentIsPublic ? 'javno' : 'privatno' }})</span>
                         </span>
                       }
+                      <ul class="items">
+                        @for (it of pr.items; track $index) {
+                          <li>
+                            <span class="badge" [class.good]="it.kind === 'unapređenje'">+{{ it.points }} {{ label(it.kind) }}</span>
+                            @if (it.text) { <span class="item-text">{{ it.text }}</span> }
+                          </li>
+                        }
+                      </ul>
                     </li>
                   }
                 </ul>
