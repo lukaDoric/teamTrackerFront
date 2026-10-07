@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Api } from '../../api';
 import {
-  Paged, PrOverviewRow, ProcessMetrics, RepositoryListItem, ReviewAssessment, ReviewerAssessment,
+  AspectImprovement, Paged, PrOverviewRow, ProcessMetrics, RepositoryListItem, ReviewAssessment, ReviewerAssessment,
 } from '../../models';
 
 const PAGE_SIZE = 20;
@@ -233,6 +233,13 @@ export class RepoDetail {
       }[k ?? ''] ?? ''
     );
   }
+  aspects(r: PrOverviewRow): { title: string; data: AspectImprovement | null }[] {
+    return [
+      { title: 'Besprekornost (pokrivenost testovima)', data: r.faultlessness },
+      { title: 'Lakoća održavanja (metrike)', data: r.maintainability },
+    ];
+  }
+
   hours(x: number | null | undefined): string {
     if (x == null) return '—';
     if (x < 1) return Math.round(x * 60) + ' min';

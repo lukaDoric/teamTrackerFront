@@ -86,8 +86,8 @@
 }
 
 <p class="muted small">
-  Pokrivenost: ▲ = coverage porastao, ▼ = pao. Lakoća održavanja: ▲ = manje prekršaja (bolje), ▼ = više
-  (gore). Klikni red za detalje.
+  Besprekornost (pokrivenost testovima) i lakoća održavanja: koliko je izmerenih problema rešeno posle revizije, od
+  ukupno izmerenih. ✔ znači da je rešen bar jedan problem koji je recenzent uočio. Klikni red za detalje.
 </p>
 
 <div class="toolbar">
@@ -117,7 +117,7 @@
         <th>Naslov</th>
         <th>Autor</th>
         <th>Stanje</th>
-        <th>Pokrivenost</th>
+        <th>Besprekornost</th>
         <th>Lakoća održavanja</th>
       </tr>
     </thead>
@@ -153,33 +153,20 @@
             }
           </td>
 
-          <td>
-            @if (r.coverage?.coverageDelta != null) {
-              @if (r.coverage!.coverageDelta! > 0) {
-                <span class="ind good">▲ {{ deltaPct(r.coverage!.coverageDelta) }}</span>
-              } @else if (r.coverage!.coverageDelta! < 0) {
-                <span class="ind bad">▼ {{ deltaPct(r.coverage!.coverageDelta) }}</span>
+          @for (a of [r.faultlessness, r.maintainability]; track $index) {
+            <td>
+              @if (a == null) {
+                <span class="muted">—</span>
+              } @else if (a.problems === 0) {
+                <span class="muted">bez problema</span>
               } @else {
-                <span class="ind flat">→ 0%</span>
+                <span class="ind" [class.good]="a.resolvedAddressed > 0" [class.flat]="a.resolvedAddressed === 0">
+                  @if (a.resolvedAddressed > 0) { ✔ }
+                  {{ a.resolved }} od {{ a.problems }} rešeno
+                </span>
               }
-            } @else {
-              <span class="muted">—</span>
-            }
-          </td>
-
-          <td>
-            @if (r.maintainability?.violationsDelta != null) {
-              @if (r.maintainability!.violationsDelta! < 0) {
-                <span class="ind good">▲ {{ r.maintainability!.violationsDelta }} prekršaja</span>
-              } @else if (r.maintainability!.violationsDelta! > 0) {
-                <span class="ind bad">▼ +{{ r.maintainability!.violationsDelta }} prekršaja</span>
-              } @else {
-                <span class="ind flat">→ 0</span>
-              }
-            } @else {
-              <span class="muted">—</span>
-            }
-          </td>
+            </td>
+          }
         </tr>
 
         @if (expanded() === r.number) {
@@ -222,59 +209,35 @@
               </div>
 
               <div class="detail-grid">
-
-                <div class="detail-block">
-                  <h4>Pokrivenost celog repoa (pre → posle revizije)</h4>
-                  @if (r.coverage; as c) {
-                    <p>
-                      Pre: <b>{{ pct(c.coverageBefore) }}</b> → Posle: <b>{{ pct(c.coverageAfter) }}</b>
-                      · Δ
-                      <span [class.good]="(c.coverageDelta ?? 0) > 0" [class.bad]="(c.coverageDelta ?? 0) < 0">
-                        {{ deltaPct(c.coverageDelta) }}
-                      </span>
-                    </p>
-                    <p>
-                      Unapređeno revizijom:
-                      @if (c.improvedByReview) { <span class="badge good">da</span> }
-                      @else { <span class="badge">ne</span> }
-                      @if (c.testsAddedAfterReview) {
-                        <span class="badge tests" title="Commit posle revizije dira test fajlove">+ testovi</span>
+                @for (blk of aspects(r); track blk.title) {
+                  <div class="detail-block">
+                    <h4>{{ blk.title }}</h4>
+                    @if (blk.data; as a) {
+                      @if (a.problems === 0) {
+                        <p class="muted">Alati nisu izmerili nijedan problem na kodu koji PR menja.</p>
+                      } @else {
+                        <p>
+                          Izmerenih problema: <b>{{ a.problems }}</b> · recenzent uočio: <b>{{ a.addressed }}</b>
+                          · rešeno posle revizije: <b>{{ a.resolved }}</b>
+                        </p>
+                        <p>
+                          Unapređeno revizijom:
+                          @if (a.resolvedAddressed > 0) {
+                            <span class="badge good">da</span>
+                            <span class="muted small">({{ a.resolvedAddressed }} rešen{{ a.resolvedAddressed === 1 ? '' : 'a' }} od uočenih)</span>
+                          } @else {
+                            <span class="badge">ne</span>
+                          }
+                        </p>
+                        <p class="muted small">
+                          Doprineli: {{ a.contributingReviewers.length ? a.contributingReviewers.join(', ') : '—' }}
+                        </p>
                       }
-                    </p>
-                    <p class="muted small">
-                      Recenzenti: {{ c.contributingReviewers.length ? c.contributingReviewers.join(', ') : '—' }}
-                    </p>
-                  } @else {
-                    <p class="muted">Nema izmerene pokrivenosti — klikni Sync.</p>
-                  }
-                </div>
-
-                <div class="detail-block">
-                  <h4>Lakoća održavanja celog repoa (pre → posle revizije)</h4>
-                  @if (r.maintainability; as m) {
-                    <p>
-                      Mesta sa prekoračenjem: <b>{{ num(m.before?.violations) }}</b> → <b>{{ num(m.after?.violations) }}</b>
-                      · Δ
-                      <span [class.good]="(m.violationsDelta ?? 0) < 0" [class.bad]="(m.violationsDelta ?? 0) > 0">
-                        {{ m.violationsDelta == null ? '—' : (m.violationsDelta > 0 ? '+' : '') + m.violationsDelta }}
-                      </span>
-                    </p>
-                    <p class="muted small">
-                      Najgore u repou — parametara: {{ num(m.before?.nopMax) }} → {{ num(m.after?.nopMax) }} · linija u metodi:
-                      {{ num(m.before?.melocMax) }} → {{ num(m.after?.melocMax) }}
-                    </p>
-                    <p>
-                      Unapređeno revizijom:
-                      @if (m.improvedByReview) { <span class="badge good">da</span> }
-                      @else { <span class="badge">ne</span> }
-                    </p>
-                    <p class="muted small">
-                      Recenzenti: {{ m.contributingReviewers.length ? m.contributingReviewers.join(', ') : '—' }}
-                    </p>
-                  } @else {
-                    <p class="muted">Nema izmerene lakoće održavanja — klikni Sync.</p>
-                  }
-                </div>
+                    } @else {
+                      <p class="muted">Nema procene revizije za ovaj PR.</p>
+                    }
+                  </div>
+                }
               </div>
 
               <div class="assess" (click)="$event.stopPropagation()">

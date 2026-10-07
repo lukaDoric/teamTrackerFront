@@ -191,9 +191,18 @@ export interface PrOverviewRow {
   createdAt: string;
   commits: number;
   reviews: number;
-  coverage: PrAnalysis | null;
-  maintainability: PrMaintainability | null;
+  reviewers: string[];
+  faultlessness: AspectImprovement | null;
+  maintainability: AspectImprovement | null;
   annotation: PrAnnotation | null;
+}
+
+export interface AspectImprovement {
+  problems: number;
+  addressed: number;
+  resolved: number;
+  resolvedAddressed: number;
+  contributingReviewers: string[];
 }
 
 export interface ScoreItem {
